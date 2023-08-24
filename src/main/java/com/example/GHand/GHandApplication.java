@@ -1,4 +1,4 @@
-package com.example.ABC;
+package com.example.GHand;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,10 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @EnableMongoRepositories
 @SpringBootApplication
-public class AbcApplication {
+public class GHandApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AbcApplication.class, args);
+		SpringApplication.run(GHandApplication.class, args);
 	}
 
 }

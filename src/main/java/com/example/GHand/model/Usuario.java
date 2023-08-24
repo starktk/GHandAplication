@@ -1,4 +1,4 @@
-package com.example.ABC.model;
+package com.example.GHand.model;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -10,8 +10,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "Usuario")
 public class Usuario {
 
-    @Id
     private String name;
+    @Id
     private String username;
+    private String password;
 
 }
