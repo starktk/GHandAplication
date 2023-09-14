@@ -18,6 +18,5 @@ public class Usuario {
     private String username;
     private String name;
     private String password;
-    private List<Fornecedor> fornecedors;
 
 }

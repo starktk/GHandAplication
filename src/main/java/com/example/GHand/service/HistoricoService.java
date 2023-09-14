@@ -13,23 +13,26 @@ public class HistoricoService {
 
     private final ObjectMapper objectMapper;
 
+    private final FornecedorService fornecedorService;
     private Historico historico;
 
     private void addProdutoToHistorico(Produto produto) {
         if (produto.getIsReceived() != SituacaoProduto.RECEBIDO) {
 
         }
-
-        historico.addProdutos(produto);
         Boolean isFutureDate = historico.getProductsReceived()
                 .stream()
                 .anyMatch(produto1 -> produto1.getDateToReceiveOrReceived() == produto.getDateToReceiveOrReceived());
 
+        historico.getProductsReceived().add(produto);
+    }
 
+ //   private Historico findHistorico() {
+ //
+ //   }
+
+    private void updateHistorico() {
+        fornecedorService.findFornecedor("abcd");
 
     }
-//
-//    public Boolean verifyFutureDate() {
-//
-//    }
 }

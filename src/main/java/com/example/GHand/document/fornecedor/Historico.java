@@ -13,16 +13,4 @@ public class Historico {
     private Integer amountReceivedProducts;
     private List<Produto> productsReceived;
 
-    public void addProdutos(Produto produto) {
-        if (produto.getAmount() <= 0) {
-
-        }
-
-        Boolean isDuplicated =
-        if (isDuplicated) {
-
-        }
-        productsReceived.add(produto);
-
-}
 }
