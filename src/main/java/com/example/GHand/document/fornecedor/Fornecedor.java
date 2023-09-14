@@ -16,9 +16,9 @@ public class Fornecedor {
 
     @Id
     private String razaoSocial;
+    private Situacao status;
     private Integer cnpj;
     private String username;
-    private Situacao status;
     private Historico historico;
 
 }
