@@ -14,6 +14,4 @@ public class Produto {
     private LocalDate dateToReceiveOrReceived;
     private SituacaoProduto isReceived;
 
-
-
 }
