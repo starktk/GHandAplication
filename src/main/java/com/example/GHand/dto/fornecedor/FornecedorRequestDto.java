@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 public class FornecedorRequestDto {
 
-    private Integer cnpj;
     private String razaoSocial;
+    private Integer cnpj;
     private Situacao status;
     private Historico historico;
 
