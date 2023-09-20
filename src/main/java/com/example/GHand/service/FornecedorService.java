@@ -37,4 +37,9 @@ public class FornecedorService {
         FornecedorHistoricoDto fornecedorReturn = objectMapper.convertValue(fornecedorToFind, FornecedorHistoricoDto.class);
         return fornecedorReturn;
     }
+
+    public FornecedorRequestDto findFornecedorToHistorico(String razaoSocial) {
+
+        return objectMapper.convertValue(fornecedorRepository.findById(razaoSocial), FornecedorRequestDto.class);
+    }
 }

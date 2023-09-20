@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class HistoricoController {
 
     private final HistoricoService historicoService;
-    @PostMapping("/historicoUP")
+    @PostMapping("historicoUP")
     public ResponseEntity attHistorico(@RequestBody HistoricoUpdateRequest historicoUpdateRequest) {
-        historicoService.updateHistorico(historicoUpdateRequest);
+        historicoService.addProdutoToHistorico(historicoUpdateRequest);
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 }

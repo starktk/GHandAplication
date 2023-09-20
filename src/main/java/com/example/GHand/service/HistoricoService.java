@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,18 +25,19 @@ public class HistoricoService {
     private final FornecedorService fornecedorService;
 
 
-    private Historico getInstance() {
-        return new Historico();
-    }
+    private Historico historico;
 
-    private void addProdutoToHistorico(HistoricoUpdateRequest historicoUpdateRequest) {
-        if (historicoUpdateRequest.getProdutcsReceived().getIsReceived() != SituacaoProduto.RECEBIDO) {
-
+    public void addProdutoToHistorico(HistoricoUpdateRequest historicoUpdateRequest) {
+        FornecedorRequestDto fornecedor = fornecedorService.findFornecedorToHistorico(historicoUpdateRequest.getRazaoSocial());
+        if (fornecedor == null || historicoUpdateRequest.getRazaoSocial().isEmpty()) {
+            throw new RuntimeException("Fornecedor inexistente");
+        } else if (historicoUpdateRequest.getProdutcsReceived().getIsReceived() != SituacaoProduto.RECEBIDO) {
+            throw new RuntimeException("Situação aberta");
+        } else if (verifyFutureDate(historicoUpdateRequest)) {
+            throw new RuntimeException("Data futura");
         }
-        Boolean isFutureDate = getInstance().getProductsReceived()
-                .stream()
-                .anyMatch(produto1 -> produto1.getDateToReceiveOrReceived() == historicoUpdateRequest.getProdutcsReceived().getDateToReceiveOrReceived());
-        getInstance().getProductsReceived().add(historicoUpdateRequest.getProdutcsReceived());
+        historico.addList(historicoUpdateRequest.getProdutcsReceived());
+        updateHistorico(historicoUpdateRequest, fornecedor);
     }
 
  //   private Historico findHistorico() {
@@ -43,34 +46,38 @@ public class HistoricoService {
 
 
 
-    public void updateHistorico(HistoricoUpdateRequest historicoUpdateRequest) {
-        Optional<FornecedorDto> fornecedorToUpdate =
-                fornecedorService.findFornecedor(historicoUpdateRequest.getRazaoSocial());
-        verifyProductsList();
-        addProdutoToHistorico(historicoUpdateRequest);
-        getInstance().setAmountReceivedProducts(calculateAmountReceivedProducts(historicoUpdateRequest));
-        FornecedorRequestDto fornecedorRequestDto =
-                objectMapper.convertValue(fornecedorToUpdate, FornecedorRequestDto.class);
-        fornecedorRequestDto.setHistorico(getInstance());
+    private void updateHistorico(HistoricoUpdateRequest historicoUpdateRequest, FornecedorRequestDto fornecedorRequestDto) {
+        Integer amountFinal = calculateAmountReceivedProducts(historicoUpdateRequest);
+        if (amountFinal <= 0) {
+            historico.setAmountReceivedProducts(historicoUpdateRequest.getProdutcsReceived().getAmount());
+        }
+        historico.setAmountReceivedProducts(amountFinal);
+        if (verifyProductsList()) {
+            throw new RuntimeException("Produtos vazios");
+        }
 
-
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate.parse(historicoUpdateRequest.getProdutcsReceived().getDateToReceiveOrReceived().toString(), formato);
+        historico.setProductsReceived(historico.getProductsReceived());
+        fornecedorRequestDto.setHistorico(historico);
+        fornecedorService.addFornecedor(fornecedorRequestDto);
     }
 
     private Integer calculateAmountReceivedProducts(HistoricoUpdateRequest historicoUpdateRequest) {
         Integer totalAmount = 0;
-//        if (!verifyProductsList()) {
-            for(Produto produto: getInstance().getProductsReceived()) {
-                totalAmount = getInstance().getAmountReceivedProducts() + historicoUpdateRequest.getProdutcsReceived().getAmount();
+       if (!verifyProductsList()) {
+            for(Produto produto: historico.getProductsReceived()) {
+                totalAmount = historico.getAmountReceivedProducts() + historicoUpdateRequest.getProdutcsReceived().getAmount();
             }
-//        }
+        }
         return totalAmount;
     }
 
     private Boolean verifyProductsList() {
-        if (getInstance().getProductsReceived() == null
-        ) {
-            return true;
-        }
-        return false;
+        return historico.getProductsReceived().isEmpty();
+    }
+    private Boolean verifyFutureDate(HistoricoUpdateRequest historicoUpdateRequest) {
+        return historicoUpdateRequest.getProdutcsReceived()
+                .getDateToReceiveOrReceived().isAfter(LocalDate.now());
     }
 }

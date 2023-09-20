@@ -4,6 +4,7 @@ import com.example.GHand.document.fornecedor.enums.SituacaoProduto;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Data
 public class Produto {

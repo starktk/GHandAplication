@@ -13,4 +13,8 @@ public class Historico {
     private Integer amountReceivedProducts;
     private List<Produto> productsReceived;
 
+    public void addList(Produto produto) {
+        productsReceived.add(produto);
+    }
+
 }
