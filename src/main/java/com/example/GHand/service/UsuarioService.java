@@ -3,7 +3,7 @@ package com.example.GHand.service;
 
 import com.example.GHand.dto.usuario.UsuarioDto;
 import com.example.GHand.dto.usuario.UsuarioRequestDto;
-import com.example.GHand.document.Usuario;
+import com.example.GHand.document.usuario.Usuario;
 import com.example.GHand.repository.UsuarioRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

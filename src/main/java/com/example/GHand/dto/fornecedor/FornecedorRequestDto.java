@@ -12,6 +12,7 @@ public class FornecedorRequestDto {
     private String razaoSocial;
     private Integer cnpj;
     private Situacao status;
+    private String username;
     private Historico historico;
 
 }

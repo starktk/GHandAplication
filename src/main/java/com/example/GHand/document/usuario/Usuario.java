@@ -1,4 +1,4 @@
-package com.example.GHand.document;
+package com.example.GHand.document.usuario;
 
 import com.example.GHand.document.fornecedor.Fornecedor;
 import lombok.*;
