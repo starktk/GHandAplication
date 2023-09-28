@@ -1,17 +1,16 @@
-package com.example.GHand.document.fornecedor.product;
+package com.example.GHand.dto.agendaproduct;
 
 import com.example.GHand.document.fornecedor.enums.SituacaoProduto;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
+public class AgendaProductRequestDto {
 
-
-@Data
-public class Produto {
-
-
+    private String razaoSocial;
     private String nameProduct;
     private Integer amount;
     private String dateToReceiveOrReceived;
     private SituacaoProduto isReceived;
-
 }

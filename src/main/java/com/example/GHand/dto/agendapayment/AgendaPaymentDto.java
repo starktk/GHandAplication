@@ -1,4 +1,4 @@
-package com.example.GHand.dto.agenda;
+package com.example.GHand.dto.agendapayment;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class AgendaDto {
+public class AgendaPaymentDto {
 
     private String razaoSocial;
     private LocalDate mes;

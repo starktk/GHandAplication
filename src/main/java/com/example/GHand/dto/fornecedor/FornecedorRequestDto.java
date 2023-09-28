@@ -1,7 +1,6 @@
 package com.example.GHand.dto.fornecedor;
 
 import com.example.GHand.document.enums.Situacao;
-import com.example.GHand.document.fornecedor.Historico;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,7 +1,7 @@
 package com.example.GHand.controller;
 
-import com.example.GHand.dto.agenda.AgendaRequestDto;
-import com.example.GHand.service.AgendaService;
+import com.example.GHand.dto.agendapayment.AgendaPaymentRequestDto;
+import com.example.GHand.service.AgendaPaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/agenda")
-public class AgendaController {
+@RequestMapping("/agendapayment")
+public class AgendaPaymentController {
 
-    private final AgendaService agendaService;
+    private final AgendaPaymentService agendaPaymentService;
 
     @PostMapping("agendar")
-    public ResponseEntity markDateToReceive(AgendaRequestDto agendaRequestDto) {
-        agendaService.addProductToReceive(agendaRequestDto);
+    public ResponseEntity markDateToReceive(AgendaPaymentRequestDto agendaPaymentRequestDto) {
+        agendaPaymentService.addProductToReceive(agendaPaymentRequestDto);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 }
