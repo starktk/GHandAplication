@@ -1,6 +1,7 @@
 package com.example.GHand.service;
 
 import com.example.GHand.document.agenda.Agenda;
+import com.example.GHand.document.fornecedor.enums.SituacaoProduto;
 import com.example.GHand.dto.agenda.AgendaDto;
 import com.example.GHand.dto.agenda.AgendaRequestDto;
 import com.example.GHand.dto.fornecedor.FornecedorDto;
@@ -34,7 +35,10 @@ public class AgendaService {
         if (fornecedorToFind == null) {
             throw new RuntimeException("Fornecedor não existe!!");
         }
-
+        if (agendaRequestDto.getProduto() == null) {
+            throw new RuntimeException("Preencha o produto");
+        }
+        agendaRequestDto.getProduto().setIsReceived(SituacaoProduto.NAO_RECEBIDO);
 
         LocalDate dateToReceive = LocalDate.parse(agendaRequestDto
                 .getProduto().getDateToReceiveOrReceived(), DateTimeFormatter.ofPattern("yyyy/MM/dd"));

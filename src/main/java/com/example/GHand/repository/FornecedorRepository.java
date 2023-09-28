@@ -12,8 +12,6 @@ import java.util.List;
 
 public interface FornecedorRepository  extends MongoRepository<Fornecedor, String> {
 
-//    @Query(value = "{'username' : :#{#username}}")
-//    List<Fornecedor> findAllByUsername(@Param("username") String username);
 
     @Query("{'username' : :#{#username}}")
     List<Fornecedor> findFornecedorByUsername(@Param("username") String username);
