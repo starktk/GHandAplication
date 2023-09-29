@@ -1,4 +1,4 @@
-package com.example.GHand.dto.agendapayment;
+package com.example.GHand.dto.agendaproduct;
 
 import lombok.Getter;
 import lombok.Setter;

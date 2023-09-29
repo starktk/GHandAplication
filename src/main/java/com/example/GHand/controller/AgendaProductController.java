@@ -1,6 +1,6 @@
 package com.example.GHand.controller;
 
-import com.example.GHand.dto.agendapayment.AgendaProductToFindDto;
+import com.example.GHand.dto.agendaproduct.AgendaProductToFindDto;
 import com.example.GHand.dto.agendaproduct.AgendaProductDto;
 import com.example.GHand.dto.agendaproduct.AgendaProductRequestDto;
 import com.example.GHand.service.AgendaProductService;
@@ -12,18 +12,18 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/agendaproduct")
-public class AgendaControllerPayment {
+public class AgendaProductController {
 
     private final AgendaProductService agendaProductService;
 
     @PostMapping("agendar")
-    public ResponseEntity markDateToProduct(@RequestBody AgendaProductRequestDto agendaProductRequestDto) {
+    public ResponseEntity addProduto(@RequestBody AgendaProductRequestDto agendaProductRequestDto) {
         agendaProductService.markToReceiveProduct(agendaProductRequestDto);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @GetMapping("findAgenda")
-    public ResponseEntity<AgendaProductDto> findAgenda(@RequestBody AgendaProductToFindDto agendaProductToFindDto) {
+    public ResponseEntity<AgendaProductDto> findProdutoInAgenda(@RequestBody AgendaProductToFindDto agendaProductToFindDto) {
         return new ResponseEntity(agendaProductService.findDate(agendaProductToFindDto), HttpStatus.FOUND);
     }
 }

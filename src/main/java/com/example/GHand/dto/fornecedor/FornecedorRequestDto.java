@@ -12,6 +12,5 @@ public class FornecedorRequestDto {
     private Integer cnpj;
     private Situacao status;
     private String username;
-    private Historico historico;
 
 }

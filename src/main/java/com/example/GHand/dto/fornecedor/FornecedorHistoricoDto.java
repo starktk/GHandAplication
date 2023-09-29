@@ -1,7 +1,7 @@
 package com.example.GHand.dto.fornecedor;
 
 
-import com.example.GHand.document.fornecedor.product.AgendaProduct;
+import com.example.GHand.document.agenda.AgendaProduct;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,8 +1,8 @@
 package com.example.GHand.service;
 
 import com.example.GHand.document.fornecedor.enums.SituacaoProduto;
-import com.example.GHand.document.fornecedor.product.AgendaProduct;
-import com.example.GHand.dto.agendapayment.AgendaProductToFindDto;
+import com.example.GHand.document.agenda.AgendaProduct;
+import com.example.GHand.dto.agendaproduct.AgendaProductToFindDto;
 import com.example.GHand.dto.agendaproduct.AgendaProductDto;
 import com.example.GHand.dto.agendaproduct.AgendaProductRequestDto;
 import com.example.GHand.dto.fornecedor.FornecedorDto;

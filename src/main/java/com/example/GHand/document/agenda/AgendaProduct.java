@@ -1,4 +1,4 @@
-package com.example.GHand.document.fornecedor.product;
+package com.example.GHand.document.agenda;
 
 import com.example.GHand.document.fornecedor.enums.SituacaoProduto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

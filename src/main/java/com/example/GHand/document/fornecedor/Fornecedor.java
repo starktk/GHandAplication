@@ -20,6 +20,5 @@ public class Fornecedor {
     private Situacao status;
     private Integer cnpj;
     private String username;
-    private Historico historico;
 
 }
