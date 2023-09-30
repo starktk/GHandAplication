@@ -1,6 +1,7 @@
 package com.example.GHand.controller;
 
 import com.example.GHand.dto.usuario.UsuarioDto;
+import com.example.GHand.dto.usuario.UsuarioLoginRequestDto;
 import com.example.GHand.dto.usuario.UsuarioRequestDto;
 import com.example.GHand.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,11 @@ public class UsuarioController {
     @GetMapping("/getUser/{id}")
     public ResponseEntity<UsuarioDto> findUser(@PathVariable ("id") String username) {
         return new ResponseEntity<>(usuarioService.findUser(username), HttpStatus.FOUND);
+    }
+
+    @GetMapping("/login")
+    public ResponseEntity<UsuarioDto> login(@RequestBody UsuarioLoginRequestDto usuarioLoginRequestDto) {
+        return new ResponseEntity(usuarioService.login(usuarioLoginRequestDto), HttpStatus.UNAUTHORIZED);
     }
 
     @PutMapping("/alterUser")

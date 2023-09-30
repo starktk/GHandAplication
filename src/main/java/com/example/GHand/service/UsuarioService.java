@@ -2,6 +2,7 @@ package com.example.GHand.service;
 
 
 import com.example.GHand.dto.usuario.UsuarioDto;
+import com.example.GHand.dto.usuario.UsuarioLoginRequestDto;
 import com.example.GHand.dto.usuario.UsuarioRequestDto;
 import com.example.GHand.document.usuario.Usuario;
 import com.example.GHand.repository.UsuarioRepository;
@@ -71,5 +72,23 @@ public class UsuarioService {
             throw new RuntimeException("Usuario não existente!!");
         }
         usuarioRepository.delete(objectMapper.convertValue(findUser(username),Usuario.class));
+    }
+
+    public UsuarioDto login(UsuarioLoginRequestDto userLogin) {
+        if (userLogin.getUsername().isEmpty() && userLogin.getPassword().isEmpty()) {
+            throw new RuntimeException("Preencha os campos");
+        } else if (userLogin.getUsername().isEmpty()) {
+            throw new RuntimeException("Username inválido");
+        } else if (userLogin.getPassword().isEmpty() || userLogin.getPassword().length() == 0) {
+            throw new RuntimeException("Senha inválida");
+        }
+
+        Usuario user = usuarioRepository.findUsuarioByUsername(userLogin.getUsername());
+        if (user.equals(userLogin)) {
+            throw new RuntimeException("Login Inválido");
+        }
+
+        UsuarioDto userReturn = objectMapper.convertValue(user, UsuarioDto.class);
+        return userReturn;
     }
 }

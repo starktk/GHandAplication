@@ -11,8 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -32,19 +30,11 @@ public class AgendaProductService {
         if (agendaProductRequestDto.getRazaoSocial().isEmpty()) {
             throw new RuntimeException("Preencha o campo!!");
         }
-        if (agendaProductRequestDto.getIsReceived() == SituacaoProduto.RECEBIDO) {
-            throw new RuntimeException("Não é possivel adicionar um produto com status recebido");
-        }
-        LocalDate dateToSave = LocalDate.parse(agendaProductRequestDto.getDateToReceiveOrReceived(), DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+
         AgendaProduct agendaToSave = objectMapper.convertValue(agendaProductRequestDto, AgendaProduct.class);
-        agendaToSave.setDateToReceiveOrReceived(dateToSave);
         agendaProductRepository.save(agendaToSave);
-        AgendaProductDto agendaProductDto = new AgendaProductDto();
-        agendaProductDto.setNomeProduct(agendaToSave.getNameProduct());
-        agendaProductDto.setAmount(agendaToSave.getAmount());
-        agendaProductDto.setStatus(agendaToSave.getIsReceived());
-        agendaProductDto.setDateToReceive(agendaToSave.getDateToReceiveOrReceived());
-        return agendaProductDto;
+        AgendaProductDto agendaReturn = objectMapper.convertValue(agendaToSave, AgendaProductDto.class);
+        return agendaReturn;
     }
 
     public AgendaProductDto findDate(AgendaProductToFindDto agendaProductToFindDto) {
@@ -53,7 +43,7 @@ public class AgendaProductService {
         }
         Optional<AgendaProduct> agendaProduct = agendaProductRepository.findById(agendaProductToFindDto.getRazaoSocial());
 
-        if (agendaProduct.get().getDateToReceiveOrReceived().getMonth().equals(agendaProductToFindDto.getMes())) {
+        if (agendaProduct.get().getDateToReceiveOrReceived().equals(agendaProductToFindDto.getMes())) {
             throw new RuntimeException("Não há recebimento este mês");
         }
 
@@ -63,5 +53,9 @@ public class AgendaProductService {
         agendaProductDto.setStatus(agendaProduct.get().getIsReceived());
         agendaProductDto.setAmount(agendaProduct.get().getAmount());
         return agendaProductDto;
+    }
+
+    public Optional<AgendaProduct> find(String razaoSocial) {
+        return agendaProductRepository.findById(razaoSocial);
     }
 }
