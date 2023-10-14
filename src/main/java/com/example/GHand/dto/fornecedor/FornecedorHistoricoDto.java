@@ -1,7 +1,7 @@
 package com.example.GHand.dto.fornecedor;
 
 
-import com.example.GHand.document.agenda.AgendaProduct;
+import com.example.GHand.document.agenda.Agenda;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,5 +12,5 @@ import java.util.List;
 public class FornecedorHistoricoDto {
 
     private Integer amountReceivedProducts;
-    private List<AgendaProduct> produtcsReceived;
+    private List<Agenda> produtcsReceived;
 }

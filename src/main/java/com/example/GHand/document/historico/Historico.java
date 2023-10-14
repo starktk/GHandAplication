@@ -1,7 +1,7 @@
-package com.example.GHand.document.agenda;
+package com.example.GHand.document.historico;
 
-
-import com.example.GHand.document.fornecedor.enums.SituacaoProduto;
+import com.example.GHand.document.agenda.AgendaPayment;
+import com.example.GHand.document.agenda.AgendaProduct;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
@@ -18,12 +18,11 @@ import java.time.LocalDate;
 @Document
 @Getter
 @Setter
-public class AgendaProduct extends Agenda {
+public class Historico {
 
     @Id
-    private String razaoSocial;
-    private String nameProduct;
-    private Integer amount;
-    private SituacaoProduto isReceived;
+    private String username;
+    private List<AgendaPayment> historyPayment;
+    private List<AgendaProduct> historyProduct;
 
 }

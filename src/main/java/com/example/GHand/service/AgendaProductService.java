@@ -1,16 +1,17 @@
 package com.example.GHand.service;
 
-import com.example.GHand.document.fornecedor.enums.SituacaoProduto;
+
 import com.example.GHand.document.agenda.AgendaProduct;
-import com.example.GHand.dto.agendaproduct.AgendaProductToFindDto;
-import com.example.GHand.dto.agendaproduct.AgendaProductDto;
-import com.example.GHand.dto.agendaproduct.AgendaProductRequestDto;
-import com.example.GHand.dto.fornecedor.FornecedorDto;
+import com.example.GHand.document.fornecedor.enums.SituacaoProduto;
+import com.example.GHand.dto.agenda.product.AgendaProductRequestDto;
 import com.example.GHand.repository.AgendaProductRepository;
+import com.example.GHand.simpleRules.SimpleRules;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -19,43 +20,34 @@ public class AgendaProductService {
 
     private final AgendaProductRepository agendaProductRepository;
     private final FornecedorService fornecedorService;
-
+    private final SimpleRules simpleRules;
     private final ObjectMapper objectMapper;
-    public AgendaProductDto markToReceiveProduct(AgendaProductRequestDto agendaProductRequestDto) {
-        FornecedorDto fornecedorDto = fornecedorService.findFornecedor(agendaProductRequestDto.getRazaoSocial());
 
-        if (fornecedorDto == null) {
-            throw new RuntimeException("Fornecedor não existe");
-        }
-        if (agendaProductRequestDto.getRazaoSocial().isEmpty()) {
-            throw new RuntimeException("Preencha o campo!!");
-        }
 
+
+    public void toScheduleDate(AgendaProductRequestDto agendaProductRequestDto) {
+        if(simpleRules.verifyString(agendaProductRequestDto.getRazaoSocial())) {
+
+        } else if(!verifyPastDate(agendaProductRequestDto.getDateReceived())) {
+
+        } else if (simpleRules.verifyNumber(agendaProductRequestDto.getAmount())) {
+
+        }
         AgendaProduct agendaToSave = objectMapper.convertValue(agendaProductRequestDto, AgendaProduct.class);
+        agendaToSave.setIsReceived(SituacaoProduto.NAO_RECEBIDO);
         agendaProductRepository.save(agendaToSave);
-        AgendaProductDto agendaReturn = objectMapper.convertValue(agendaToSave, AgendaProductDto.class);
-        return agendaReturn;
+
+
     }
 
-    public AgendaProductDto findDate(AgendaProductToFindDto agendaProductToFindDto) {
-        if (agendaProductToFindDto.getRazaoSocial().isEmpty()) {
-            throw new RuntimeException("Preencha o campo");
+    private Boolean verifyPastDate(LocalDate date) {
+        if (!date.isAfter(LocalDate.now())) {
+            return false;
         }
-        Optional<AgendaProduct> agendaProduct = agendaProductRepository.findById(agendaProductToFindDto.getRazaoSocial());
-
-        if (agendaProduct.get().getDateToReceiveOrReceived().equals(agendaProductToFindDto.getMes())) {
-            throw new RuntimeException("Não há recebimento este mês");
-        }
-
-        AgendaProductDto agendaProductDto = new AgendaProductDto();
-        agendaProductDto.setDateToReceive(agendaProduct.get().getDateToReceiveOrReceived());
-        agendaProductDto.setNomeProduct(agendaProduct.get().getNameProduct());
-        agendaProductDto.setStatus(agendaProduct.get().getIsReceived());
-        agendaProductDto.setAmount(agendaProduct.get().getAmount());
-        return agendaProductDto;
+        return true;
     }
+   // public ResponseEntity addToHistorico() {
 
-    public Optional<AgendaProduct> find(String razaoSocial) {
-        return agendaProductRepository.findById(razaoSocial);
-    }
+ //   }
+
 }

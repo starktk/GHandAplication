@@ -3,12 +3,11 @@ package com.example.GHand.service;
 import com.example.GHand.document.enums.Situacao;
 import com.example.GHand.document.fornecedor.Fornecedor;
 import com.example.GHand.dto.fornecedor.FornecedorDto;
-import com.example.GHand.dto.fornecedor.FornecedorHistoricoDto;
 import com.example.GHand.dto.fornecedor.FornecedorRequestDto;
 import com.example.GHand.repository.FornecedorRepository;
+import com.example.GHand.simpleRules.SimpleRules;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -18,9 +17,7 @@ import java.util.stream.Collectors;
 @Service
 public class FornecedorService {
 
-
-    private final MongoTemplate mongoTemplate;
-
+    private SimpleRules simpleRules;
     private final FornecedorRepository fornecedorRepository;
 
     private final UsuarioService usuarioService;
@@ -44,26 +41,21 @@ public class FornecedorService {
     }
 
     public FornecedorDto findFornecedor(String razaoSocial) {
+        if(simpleRules.verifyString(razaoSocial)) {
+
+        }
         Optional<Fornecedor> fornecedorToFind = fornecedorRepository.findById(razaoSocial);
         FornecedorDto fornecedorReturn = objectMapper.convertValue(fornecedorToFind, FornecedorDto.class);
         return fornecedorReturn;
     }
-
-    public FornecedorHistoricoDto findHistoricoInFornecedor(String razaoSocial) {
-        Optional<Fornecedor> fornecedorToFind = fornecedorRepository.findById(razaoSocial);
-        FornecedorHistoricoDto fornecedorReturn = objectMapper.convertValue(fornecedorToFind, FornecedorHistoricoDto.class);
-        return fornecedorReturn;
-    }
-
-    public FornecedorRequestDto findFornecedorToHistorico(String razaoSocial) {
-        return objectMapper.convertValue(fornecedorRepository.findById(razaoSocial), FornecedorRequestDto.class);
-    }
-
     public FornecedorDto alterFornecedor(FornecedorDto fornecedorDto) {
+        if (simpleRules.verifyString(fornecedorDto.getRazaoSocial())) {
+
+        }
         if (fornecedorRepository.findById(fornecedorDto.getRazaoSocial()).isPresent()) {
             throw new RuntimeException("Fornecedor não encontrado");
         }
-        if (fornecedorDto.getRazaoSocial().isEmpty() && fornecedorDto.getCnpj() >= 0) {
+        if (simpleRules.verifyNumber(fornecedorDto.getCnpj())) {
             throw new RuntimeException("Preencher os campos");
         } else if (fornecedorDto.getStatus() != Situacao.ATIVA || fornecedorDto.getStatus() != Situacao.INATIVA) {
             throw new RuntimeException("Situação do fornecedor não aceita!!");
@@ -73,12 +65,11 @@ public class FornecedorService {
         fornecedorToSave.setRazaoSocial(fornecedorDto.getRazaoSocial());
         fornecedorToSave.setCnpj(fornecedorDto.getCnpj());
         fornecedorToSave.setStatus(fornecedorDto.getStatus());
-        FornecedorDto fornecedorReturn = objectMapper.convertValue(fornecedorToSave, FornecedorDto.class);
-        return fornecedorReturn;
+        return objectMapper.convertValue(fornecedorToSave, FornecedorDto.class);
     }
 
     public void deleteFornecedor(String razaoSocial) {
-        if (razaoSocial.isEmpty()) {
+        if (simpleRules.verifyString(razaoSocial)) {
             throw new RuntimeException("Preencha a razão social");
         } else if (!fornecedorRepository.findById(razaoSocial).isPresent()) {
             throw new RuntimeException("Usuario não existente");
@@ -86,6 +77,9 @@ public class FornecedorService {
         fornecedorRepository.deleteById(razaoSocial);
     }
     public FornecedorDto changeStatus(FornecedorDto fornecedorDto) {
+        if(simpleRules.verifyString(fornecedorDto.getRazaoSocial())) {
+
+        }
         Fornecedor fornecedorToUpdate = objectMapper.convertValue(fornecedorRepository.findById(fornecedorDto.getRazaoSocial()), Fornecedor.class);
         if (fornecedorDto.getStatus() == fornecedorToUpdate.getStatus()) {
             throw new RuntimeException("Fornecedor já possui esse status");
@@ -96,7 +90,7 @@ public class FornecedorService {
     }
 
     public List<FornecedorDto> getAllFornecedores(String username) {
-        if (username.isEmpty()) {
+        if (simpleRules.verifyString(username)) {
             throw new RuntimeException("string vazia");
         }
         List<Fornecedor> forne = fornecedorRepository.findFornecedorByUsername(username);

@@ -1,7 +1,5 @@
 package com.example.GHand.document.agenda;
 
-
-import com.example.GHand.document.fornecedor.enums.SituacaoProduto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,12 +16,10 @@ import java.time.LocalDate;
 @Document
 @Getter
 @Setter
-public class AgendaProduct extends Agenda {
+public class AgendaPayment extends Agenda {
 
     @Id
     private String razaoSocial;
-    private String nameProduct;
-    private Integer amount;
-    private SituacaoProduto isReceived;
-
+    private Integer amountToPay;
+    private LocalDate datePay;
 }

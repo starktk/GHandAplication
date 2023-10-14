@@ -1,6 +1,6 @@
 package com.example.GHand.controller;
 
-import com.example.GHand.document.agenda.AgendaProduct;
+import com.example.GHand.document.agenda.Agenda;
 import com.example.GHand.dto.agendaproduct.AgendaProductToFindDto;
 import com.example.GHand.dto.agendaproduct.AgendaProductDto;
 import com.example.GHand.dto.agendaproduct.AgendaProductRequestDto;
@@ -29,7 +29,7 @@ public class AgendaProductController {
     }
 
     @GetMapping("find/{id}")
-    public ResponseEntity<AgendaProduct> find(@PathVariable("id") String razaoSocial) {
+    public ResponseEntity<Agenda> find(@PathVariable("id") String razaoSocial) {
         return new ResponseEntity(agendaProductService.find(razaoSocial), HttpStatus.FOUND);
     }
 }

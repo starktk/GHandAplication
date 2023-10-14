@@ -1,5 +1,6 @@
 package com.example.GHand.repository;
 
+import com.example.GHand.document.agenda.Agenda;
 import com.example.GHand.document.agenda.AgendaProduct;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
