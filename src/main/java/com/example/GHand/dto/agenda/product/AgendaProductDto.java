@@ -1,5 +1,6 @@
 package com.example.GHand.dto.agenda.product;
 
+
 import com.example.GHand.document.fornecedor.enums.SituacaoProduto;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,12 +9,11 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class AgendaProductRequestDto {
+public class AgendaProductDto {
 
-    private String username;
-    private LocalDate dateReceived;
+    private LocalDate date;
     private String razaoSocial;
     private String nameProduct;
-    private Integer amount;
+    private SituacaoProduto isReceived;
 
 }

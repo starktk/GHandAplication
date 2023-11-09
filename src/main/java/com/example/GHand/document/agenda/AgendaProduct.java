@@ -23,7 +23,7 @@ public class AgendaProduct extends Agenda {
     @Id
     private String razaoSocial;
     private String nameProduct;
-    private Integer amount;
     private SituacaoProduto isReceived;
+    private Integer amount;
 
 }

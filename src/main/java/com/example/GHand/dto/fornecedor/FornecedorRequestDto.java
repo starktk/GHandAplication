@@ -9,7 +9,7 @@ import lombok.Setter;
 public class FornecedorRequestDto {
 
     private String razaoSocial;
-    private Integer cnpj;
+    private String cnpj;
     private Situacao status;
     private String username;
 

@@ -1,13 +1,15 @@
 package com.example.GHand.service;
 
-import com.example.GHand.document.enums.Situacao;
 import com.example.GHand.document.fornecedor.Fornecedor;
 import com.example.GHand.dto.fornecedor.FornecedorDto;
 import com.example.GHand.dto.fornecedor.FornecedorRequestDto;
+import com.example.GHand.exceptions.NotFoundException;
+import com.example.GHand.exceptions.ValueNotAcceptedException;
 import com.example.GHand.repository.FornecedorRepository;
-import com.example.GHand.simpleRules.SimpleRules;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -16,23 +18,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class FornecedorService {
-
-    private SimpleRules simpleRules;
     private final FornecedorRepository fornecedorRepository;
 
     private final UsuarioService usuarioService;
     public final ObjectMapper objectMapper;
 
-    public FornecedorDto addFornecedor(FornecedorRequestDto fornecedorRequestDto) {
-        if (usuarioService.findUser(fornecedorRequestDto.getUsername()) == null) {
-            throw new RuntimeException("Username inexistente!!");
+    public FornecedorDto addFornecedor(FornecedorRequestDto fornecedorRequestDto) throws ValueNotAcceptedException, NotFoundException {
+        if (fornecedorRequestDto.getRazaoSocial().isEmpty()) {
+            throw new ValueNotAcceptedException("Razão Social inválida");
         }
-        if (fornecedorRequestDto.getCnpj() > 11) {
-            throw new RuntimeException("Cnpj inválido");
-        } else if (fornecedorRequestDto.getRazaoSocial().isEmpty()) {
-            throw new RuntimeException("Preencher razão social");
-        } else if(fornecedorRepository.findById(fornecedorRequestDto.getRazaoSocial()).isPresent()) {
-            throw new RuntimeException("Usuario já existente");
+        if (fornecedorRepository.findFornecedorByrazaoSocialAndUsername(fornecedorRequestDto.getRazaoSocial(), fornecedorRequestDto.getUsername()) != null) {
+            throw new ValueNotAcceptedException("Fornecedor já existente");
+        }
+        if (!usuarioService.verifyUser(fornecedorRequestDto.getUsername())) {
+            throw new NotFoundException("Usuario não encontrado!!");
+        }
+        if (fornecedorRequestDto.getCnpj().length() != 11) {
+            throw new ValueNotAcceptedException("Cnpj Inválido");
         }
         Fornecedor fornecedorSave = objectMapper.convertValue(fornecedorRequestDto, Fornecedor.class);
         FornecedorDto fornecedorReturn = objectMapper.convertValue(fornecedorRepository
@@ -40,58 +42,65 @@ public class FornecedorService {
         return fornecedorReturn;
     }
 
-    public FornecedorDto findFornecedor(String razaoSocial) {
-        if(simpleRules.verifyString(razaoSocial)) {
-
+    public FornecedorDto findFornecedor(FornecedorRequestDto fornecedorDto) throws ValueNotAcceptedException, NotFoundException {
+        if(fornecedorDto.getRazaoSocial().isEmpty()) {
+            throw new ValueNotAcceptedException("Razão social inválida!!");
+        } else if (fornecedorRepository.findFornecedorByrazaoSocialAndUsername(fornecedorDto.getRazaoSocial(), fornecedorDto.getUsername()) == null) {
+            throw new NotFoundException("Fornecedor não encontrado");
         }
-        Optional<Fornecedor> fornecedorToFind = fornecedorRepository.findById(razaoSocial);
+        Fornecedor fornecedorToFind = fornecedorRepository.findFornecedorByrazaoSocialAndUsername(fornecedorDto.getRazaoSocial(), fornecedorDto.getUsername());
         FornecedorDto fornecedorReturn = objectMapper.convertValue(fornecedorToFind, FornecedorDto.class);
         return fornecedorReturn;
     }
-    public FornecedorDto alterFornecedor(FornecedorDto fornecedorDto) {
-        if (simpleRules.verifyString(fornecedorDto.getRazaoSocial())) {
+    public FornecedorDto alterFornecedor(FornecedorRequestDto fornecedorRequestDto) throws ValueNotAcceptedException, NotFoundException {
+        if (!usuarioService.verifyUser(fornecedorRequestDto.getUsername())) {
+            throw new NotFoundException("Usuario não encontrado!!");
+        }
+        if (fornecedorRequestDto.getRazaoSocial().isEmpty()) {
+            throw new ValueNotAcceptedException("Razão social inválida!!");
+        } else if (!fornecedorRepository.findById(fornecedorRequestDto.getRazaoSocial()).isPresent()) {
+            throw new NotFoundException("Fornecedor não encontrado");
+        } else if (fornecedorRequestDto.getCnpj().length() != 11) {
+            throw new ValueNotAcceptedException("Cnpj inválido!!");
+        }
 
+        Fornecedor fornecedorToSave = fornecedorRepository.findFornecedorByrazaoSocialAndUsername(fornecedorRequestDto.getRazaoSocial(), fornecedorRequestDto.getUsername());
+        switch (fornecedorRequestDto.getStatus()) {
+            case ATIVA, INATIVA -> fornecedorToSave.setStatus(fornecedorRequestDto.getStatus());
+            default -> throw new ValueNotAcceptedException("Status inválido!!");
         }
-        if (fornecedorRepository.findById(fornecedorDto.getRazaoSocial()).isPresent()) {
-            throw new RuntimeException("Fornecedor não encontrado");
-        }
-        if (simpleRules.verifyNumber(fornecedorDto.getCnpj())) {
-            throw new RuntimeException("Preencher os campos");
-        } else if (fornecedorDto.getStatus() != Situacao.ATIVA || fornecedorDto.getStatus() != Situacao.INATIVA) {
-            throw new RuntimeException("Situação do fornecedor não aceita!!");
-        }
-        Fornecedor fornecedorToSave = objectMapper.convertValue(fornecedorRepository
-                .findById(fornecedorDto.getRazaoSocial()), Fornecedor.class);
-        fornecedorToSave.setRazaoSocial(fornecedorDto.getRazaoSocial());
-        fornecedorToSave.setCnpj(fornecedorDto.getCnpj());
-        fornecedorToSave.setStatus(fornecedorDto.getStatus());
-        return objectMapper.convertValue(fornecedorToSave, FornecedorDto.class);
+        fornecedorToSave.setRazaoSocial(fornecedorRequestDto.getRazaoSocial());
+        fornecedorToSave.setCnpj(fornecedorRequestDto.getCnpj());
+        FornecedorDto fornecedorToReturn = objectMapper.convertValue(fornecedorRepository.save(fornecedorToSave), FornecedorDto.class);
+        return fornecedorToReturn;
     }
 
-    public void deleteFornecedor(String razaoSocial) {
-        if (simpleRules.verifyString(razaoSocial)) {
-            throw new RuntimeException("Preencha a razão social");
+    public void deleteFornecedor(String razaoSocial) throws ValueNotAcceptedException, NotFoundException {
+        if (razaoSocial.isEmpty()) {
+            throw new ValueNotAcceptedException("Razão social inválida!!");
         } else if (!fornecedorRepository.findById(razaoSocial).isPresent()) {
-            throw new RuntimeException("Usuario não existente");
+            throw new NotFoundException("Fornecedor não encontrado");
         }
         fornecedorRepository.deleteById(razaoSocial);
     }
-    public FornecedorDto changeStatus(FornecedorDto fornecedorDto) {
-        if(simpleRules.verifyString(fornecedorDto.getRazaoSocial())) {
-
+    public ResponseEntity<FornecedorDto> changeStatus(FornecedorDto fornecedorDto) {
+        if(fornecedorDto.getRazaoSocial().isEmpty()) {
+            return new ResponseEntity("Razão Social inválida", HttpStatus.NOT_ACCEPTABLE);
         }
         Fornecedor fornecedorToUpdate = objectMapper.convertValue(fornecedorRepository.findById(fornecedorDto.getRazaoSocial()), Fornecedor.class);
         if (fornecedorDto.getStatus() == fornecedorToUpdate.getStatus()) {
-            throw new RuntimeException("Fornecedor já possui esse status");
+            return new ResponseEntity("Fornecedor já possui esse status", HttpStatus.NOT_ACCEPTABLE);
         }
         fornecedorToUpdate.setStatus(fornecedorDto.getStatus());
         FornecedorDto fornecedorReturn = objectMapper.convertValue(fornecedorRepository.save(fornecedorToUpdate), FornecedorDto.class);
-        return fornecedorReturn;
+        return new ResponseEntity(fornecedorReturn, HttpStatus.ACCEPTED);
     }
 
-    public List<FornecedorDto> getAllFornecedores(String username) {
-        if (simpleRules.verifyString(username)) {
-            throw new RuntimeException("string vazia");
+    public List<FornecedorDto> getAllFornecedores(String username) throws ValueNotAcceptedException, NotFoundException {
+        if (username.isEmpty()) {
+            throw new ValueNotAcceptedException("Razão social inválida!!");
+        } else if (!usuarioService.verifyUser(username)) {
+            throw new NotFoundException("Usuário inexistente!!");
         }
         List<Fornecedor> forne = fornecedorRepository.findFornecedorByUsername(username);
         List<FornecedorDto> fornecedores = mapper(forne);

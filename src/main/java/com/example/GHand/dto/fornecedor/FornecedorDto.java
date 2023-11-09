@@ -9,14 +9,14 @@ import lombok.Setter;
 @Setter
 public class FornecedorDto {
     @Builder
-    public FornecedorDto(String razaoSocial, Integer cnpj, Situacao status) {
+    public FornecedorDto(String razaoSocial, String cnpj, Situacao status) {
         this.razaoSocial = razaoSocial;
         this.cnpj = cnpj;
         this.status = status;
     }
 
     private String razaoSocial;
-    private Integer cnpj;
+    private String cnpj;
     private Situacao status;
 
 }

@@ -1,9 +1,10 @@
 package com.example.GHand.simpleRules;
 
+
 public class SimpleRules {
 
     public Boolean verifyString(String stringToVerify) {
-        return stringToVerify.isBlank();
+        return stringToVerify.isEmpty();
     }
 
     public Boolean verifyNumber(Integer numberToVerify) {
