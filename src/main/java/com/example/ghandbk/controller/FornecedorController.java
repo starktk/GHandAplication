@@ -1,0 +1,38 @@
+package com.example.ghandbk.controller;
+
+import com.example.ghandbk.collection.supplier.Fornecedor;
+import com.example.ghandbk.dto.supllier.FornecedorDto;
+import com.example.ghandbk.dto.supllier.FornecedorRequestDto;
+import com.example.ghandbk.exceptions.InvalidValueException;
+import com.example.ghandbk.exceptions.NotAuthorizedException;
+import com.example.ghandbk.exceptions.NotFoundException;
+import com.example.ghandbk.service.FornecedorService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/fornecedor")
+public class FornecedorController {
+
+    private final FornecedorService fornecedorService;
+
+    @PostMapping("/createFornecedor")
+    public ResponseEntity<Fornecedor> insertFornecedor(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws NotFoundException, InvalidValueException, NotAuthorizedException {
+        return new ResponseEntity(fornecedorService.addFornecedor(fornecedorRequestDto), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/findAllFornecedores/{id}")
+    public ResponseEntity<List<FornecedorDto>> findAllFornecedoresByUser(@PathVariable("id") String username) throws InvalidValueException, NotFoundException {
+        return new ResponseEntity(fornecedorService.findAllFornecedores(username), HttpStatus.FOUND);
+    }
+
+//    @GetMapping("/findFornecedorByRazaoSocial")
+//    public ResponseEntity findFornecedoresByRazaoSocial(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
+//        return new ResponseEntity(fornecedorService.findFornecedorByrazaoSocial(fornecedorRequestDto), HttpStatus.FOUND);
+//    }
+}
