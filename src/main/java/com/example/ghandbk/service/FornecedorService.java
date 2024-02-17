@@ -10,10 +10,14 @@ import com.example.ghandbk.exceptions.NotAuthorizedException;
 import com.example.ghandbk.exceptions.NotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
@@ -40,12 +44,34 @@ public class FornecedorService {
        List<FornecedorDto> fornecedorDtos = fornecedores.stream().map(a -> new FornecedorDto(a.getRazaoSocial(), a.getCnpj(), a.getStatus())).collect(Collectors.toList());
        return fornecedorDtos;
     }
-//
-//    public List<FornecedorDto> findFornecedorByrazaoSocial(FornecedorRequestDto fornecedorRequestDto) throws NotFoundException, InvalidValueException {
-//        Usuario usuario = validateUser(fornecedorRequestDto);
-//        if (usuario.getFornecedores().isEmpty()) throw new NotFoundException("Fornecedor não encontrado");
-//        if (fornecedorRequestDto.getRazaoSocial().isBlank()) throw new InvalidValueException("Preencha o campo!");
-//        List<FornecedorDto> fornecedores = usuario.getFornecedores().stream().filter(fornecedor -> fornecedor.getRazaoSocial().contains(fornecedorRequestDto.getRazaoSocial())).map(fornecedor -> new FornecedorDto(fornecedor.getRazaoSocial(), fornecedor.getCnpj(), fornecedor.getStatus())).toList();
-//        return fornecedores;
-//    }
+
+    public List<FornecedorDto> findFornecedorByrazaoSocial(FornecedorRequestDto fornecedorRequestDto) throws NotFoundException, InvalidValueException {
+        List<FornecedorDto> fornecedores = findAllFornecedores(fornecedorRequestDto.getUsername());
+        if (fornecedorRequestDto.getRazaoSocial().isBlank()) throw new InvalidValueException("Preencha o campo!");
+        if (fornecedores.stream().noneMatch(forne -> forne.getRazaoSocial().equals(fornecedorRequestDto.getRazaoSocial()))) throw new NotFoundException("Fornecedores não encontrados");
+        List<FornecedorDto> fornecedorReturn = fornecedores.stream().filter(fornecedor -> fornecedor.getRazaoSocial().equals(fornecedorRequestDto.getRazaoSocial())).toList();
+        return fornecedorReturn;
+    }
+
+    public FornecedorDto getFornecedorByCnpj(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
+        if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
+        List<FornecedorDto> fornecedores = findAllFornecedores(fornecedorRequestDto.getUsername());
+        if (fornecedores.stream().noneMatch(forne -> forne.getCnpj().equals(fornecedorRequestDto.getCnpj()))) throw new NotFoundException("Fornecedor não encontrado");
+        Stream<FornecedorDto> fornecedorDto = fornecedores.stream()
+                .filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
+        FornecedorDto fornecedorReturn = fornecedorDto.findAny().get();
+
+        return fornecedorReturn;
+    }
+
+
+
+    public List<FornecedorDto> findByStatus(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
+        if (fornecedorRequestDto.getStatus() != Situacao.ATIVA || fornecedorRequestDto.getStatus() != Situacao.INATIVA) throw new InvalidValueException("Status inválido");
+        List<FornecedorDto> fornecedores = findAllFornecedores(fornecedorRequestDto.getUsername());
+        List<FornecedorDto> fornecedoresReturn = fornecedores
+                .stream().filter(fornecedor -> fornecedor.getStatus()
+                        .equals(fornecedorRequestDto.getStatus())).toList();
+        return fornecedoresReturn;
+    }
 }

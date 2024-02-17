@@ -49,7 +49,11 @@ public class UsuarioService {
         if (usuarioRequestDto.getName().isBlank()) throw new InvalidValueException("Nome inválido");
         try {
             if (!user.getFornecedores().isEmpty()) {
-                user.getFornecedores().add(usuarioRequestDto.getFornecedor());
+               if (user.getFornecedores().contains(usuarioRequestDto.getFornecedor().getCnpj())) {
+                   throw new NotAuthorizedException("Cnpj já existente");
+               } else {
+                   user.getFornecedores().add(usuarioRequestDto.getFornecedor());
+               }
             }
         } catch (NullPointerException exception) {
             ArrayList<Fornecedor> fornecedors = new ArrayList<>();

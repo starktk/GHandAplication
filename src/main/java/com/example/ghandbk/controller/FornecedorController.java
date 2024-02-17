@@ -31,8 +31,17 @@ public class FornecedorController {
         return new ResponseEntity(fornecedorService.findAllFornecedores(username), HttpStatus.FOUND);
     }
 
-//    @GetMapping("/findFornecedorByRazaoSocial")
-//    public ResponseEntity findFornecedoresByRazaoSocial(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
-//        return new ResponseEntity(fornecedorService.findFornecedorByrazaoSocial(fornecedorRequestDto), HttpStatus.FOUND);
-//    }
+    @GetMapping("/findFornecedorByCnpj")
+    public ResponseEntity<FornecedorDto> findByCnpj(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
+        return new ResponseEntity(fornecedorService.getFornecedorByCnpj(fornecedorRequestDto), HttpStatus.FOUND);
+    }
+    @GetMapping("/findFornecedorByRazaoSocial")
+    public ResponseEntity<List<FornecedorDto>> findFornecedoresByRazaoSocial(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
+        return new ResponseEntity(fornecedorService.findFornecedorByrazaoSocial(fornecedorRequestDto), HttpStatus.FOUND);
+    }
+
+    @GetMapping("/findFornecedorByStatus")
+    public ResponseEntity<List<FornecedorDto>> findByStatus(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
+        return new ResponseEntity(fornecedorService.findByStatus(fornecedorRequestDto), HttpStatus.FOUND);
+    }
 }
