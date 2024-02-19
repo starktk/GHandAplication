@@ -44,4 +44,20 @@ public class FornecedorController {
     public ResponseEntity<List<FornecedorDto>> findByStatus(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
         return new ResponseEntity(fornecedorService.findByStatus(fornecedorRequestDto), HttpStatus.FOUND);
     }
+
+    @DeleteMapping("deleteFornecedor")
+    public ResponseEntity deleteByCnpj(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        fornecedorService.deleteFornecedor(fornecedorRequestDto);
+        return new ResponseEntity(HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping("/updateFornecedor")
+    public ResponseEntity<FornecedorDto> updateFornecedor(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        return new ResponseEntity(fornecedorService.updateFornecedor(fornecedorRequestDto), HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping("/updateStatus")
+    public ResponseEntity<FornecedorDto> updateStatus(@RequestBody FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        return new ResponseEntity(fornecedorService.updateFornecedorByStatus(fornecedorRequestDto), HttpStatus.ACCEPTED);
+    }
 }

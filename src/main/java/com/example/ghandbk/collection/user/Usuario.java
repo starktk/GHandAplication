@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 @AllArgsConstructor
@@ -21,6 +22,6 @@ public class Usuario {
     private String username;
     private String name;
     private String password;
-    private ArrayList<Fornecedor> fornecedores;
+    private List<Fornecedor> fornecedores;
 
 }

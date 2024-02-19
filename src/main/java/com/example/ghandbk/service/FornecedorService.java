@@ -48,30 +48,80 @@ public class FornecedorService {
     public List<FornecedorDto> findFornecedorByrazaoSocial(FornecedorRequestDto fornecedorRequestDto) throws NotFoundException, InvalidValueException {
         List<FornecedorDto> fornecedores = findAllFornecedores(fornecedorRequestDto.getUsername());
         if (fornecedorRequestDto.getRazaoSocial().isBlank()) throw new InvalidValueException("Preencha o campo!");
-        if (fornecedores.stream().noneMatch(forne -> forne.getRazaoSocial().equals(fornecedorRequestDto.getRazaoSocial()))) throw new NotFoundException("Fornecedores não encontrados");
         List<FornecedorDto> fornecedorReturn = fornecedores.stream().filter(fornecedor -> fornecedor.getRazaoSocial().equals(fornecedorRequestDto.getRazaoSocial())).toList();
+        if (fornecedorReturn.isEmpty()) throw new NotFoundException("Fornecedores não encontrados");
         return fornecedorReturn;
     }
 
     public FornecedorDto getFornecedorByCnpj(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
         if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
+        verifyCnpj(fornecedorRequestDto.getUsername(), fornecedorRequestDto.getCnpj());
         List<FornecedorDto> fornecedores = findAllFornecedores(fornecedorRequestDto.getUsername());
-        if (fornecedores.stream().noneMatch(forne -> forne.getCnpj().equals(fornecedorRequestDto.getCnpj()))) throw new NotFoundException("Fornecedor não encontrado");
-        Stream<FornecedorDto> fornecedorDto = fornecedores.stream()
-                .filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
+        Stream<FornecedorDto> fornecedorDto = fornecedores.stream().filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
         FornecedorDto fornecedorReturn = fornecedorDto.findAny().get();
 
         return fornecedorReturn;
     }
 
+    public void deleteFornecedor(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Preencha o campo");
+        UsuarioRequestDto usuarioRequestDto = new UsuarioRequestDto();
+        Fornecedor fornecedor = objectMapper.convertValue(fornecedorRequestDto, Fornecedor.class);
+        usuarioRequestDto.setUsername(fornecedorRequestDto.getUsername());
+        usuarioRequestDto.setFornecedor(fornecedor);
+        usuarioService.deleteFornecedor(usuarioRequestDto);
+    }
 
+    public FornecedorDto updateFornecedor(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
+        if (fornecedorRequestDto.getUsername() == null || fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Usuario inválido");
+        List<Fornecedor> fornecedors = usuarioService.getFornecedores(fornecedorRequestDto.getUsername());
+        Stream<Fornecedor> fornecedorStream = fornecedors.stream().filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
+        Fornecedor fornecedorToSave = fornecedorStream.findAny().get();
+        fornecedorToSave.setCnpj(fornecedorRequestDto.getCnpj());
+        fornecedorToSave.setRazaoSocial(fornecedorRequestDto.getRazaoSocial());
+        fornecedorToSave.setStatus(fornecedorRequestDto.getStatus());
+        UsuarioRequestDto user = new UsuarioRequestDto();
+        user.setUsername(fornecedorRequestDto.getUsername());
+        user.setName(fornecedorRequestDto.getName());
+        user.setFornecedor(fornecedorToSave);
+        return usuarioService.updateFornecedor(user);
+    }
 
+    public FornecedorDto updateFornecedorByStatus(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (fornecedorRequestDto.getCnpj().isBlank() || fornecedorRequestDto.getCnpj().length() <= 11) throw new InvalidValueException("Cnpj inválido");
+        if (fornecedorRequestDto.getUsername() == null || fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Usuario inválido");
+        verifyCnpj(fornecedorRequestDto.getUsername(), fornecedorRequestDto.getCnpj());
+        List<Fornecedor> fornecedors = usuarioService.getFornecedores(fornecedorRequestDto.getUsername());
+        Stream<Fornecedor> fornecedorStream = fornecedors.stream().filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
+        Fornecedor fornecedorToSave = fornecedorStream.findAny().get();
+        switch (fornecedorRequestDto.getStatus()) {
+            case ATIVA, INATIVA -> fornecedorToSave.setStatus(fornecedorRequestDto.getStatus());
+        }
+        UsuarioRequestDto user = new UsuarioRequestDto();
+        user.setUsername(fornecedorRequestDto.getUsername());
+        user.setName(fornecedorRequestDto.getName());
+        user.setFornecedor(fornecedorToSave);
+        return usuarioService.updateFornecedor(user);
+    }
     public List<FornecedorDto> findByStatus(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
-        if (fornecedorRequestDto.getStatus() != Situacao.ATIVA || fornecedorRequestDto.getStatus() != Situacao.INATIVA) throw new InvalidValueException("Status inválido");
+        if (fornecedorRequestDto.getUsername() == null || fornecedorRequestDto.getUsername().isBlank()) throw new InvalidValueException("Preencha o campo");
         List<FornecedorDto> fornecedores = findAllFornecedores(fornecedorRequestDto.getUsername());
         List<FornecedorDto> fornecedoresReturn = fornecedores
                 .stream().filter(fornecedor -> fornecedor.getStatus()
                         .equals(fornecedorRequestDto.getStatus())).toList();
+        if (fornecedoresReturn.isEmpty()) throw new NotFoundException("Fornecedores com este status não encontrados");
         return fornecedoresReturn;
     }
+
+    private void verifyCnpj(String username, String cnpj) throws InvalidValueException, NotFoundException {
+        try {
+            usuarioService.getFornecedores(username).stream().filter(fornecedor -> fornecedor.getCnpj().equals(cnpj)).findAny().get();
+        } catch (NoSuchElementException e) {
+            throw new NotFoundException("Fornecedor não encontrado");
+        }
+    }
+
+
+
 }
