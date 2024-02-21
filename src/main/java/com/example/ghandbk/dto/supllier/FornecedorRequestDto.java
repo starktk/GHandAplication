@@ -2,6 +2,7 @@ package com.example.ghandbk.dto.supllier;
 
 import com.example.ghandbk.collection.Historico;
 import com.example.ghandbk.collection.enums.Situacao;
+import com.example.ghandbk.collection.schedule.AgendaProduto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +15,7 @@ public class FornecedorRequestDto {
     private String razaoSocial;
     private String cnpj;
     private Situacao status;
-    private List<Historico> historico;
+    private Historico historico;
     private String username;
     private String name;
 }

@@ -2,6 +2,7 @@ package com.example.ghandbk.collection.supplier;
 
 import com.example.ghandbk.collection.Historico;
 import com.example.ghandbk.collection.enums.Situacao;
+import com.example.ghandbk.collection.schedule.AgendaProduto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,13 +13,6 @@ import java.util.List;
 @Setter
 
 public class Fornecedor {
-    @Builder
-    public Fornecedor(String razaoSocial, String cnpj, Situacao status, List<Historico> historico) {
-        this.razaoSocial = razaoSocial;
-        this.cnpj = cnpj;
-        this.status = status;
-        this.historico = historico;
-    }
 
     private String razaoSocial;
     private String cnpj;

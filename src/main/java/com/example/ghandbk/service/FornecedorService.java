@@ -1,7 +1,9 @@
 package com.example.ghandbk.service;
 
 import com.example.ghandbk.collection.enums.Situacao;
+import com.example.ghandbk.collection.schedule.AgendaProduto;
 import com.example.ghandbk.collection.supplier.Fornecedor;
+import com.example.ghandbk.dto.schedule.AgendaProdutoRequestDto;
 import com.example.ghandbk.dto.supllier.FornecedorDto;
 import com.example.ghandbk.dto.supllier.FornecedorRequestDto;
 import com.example.ghandbk.dto.user.UsuarioRequestDto;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -78,9 +81,12 @@ public class FornecedorService {
         List<Fornecedor> fornecedors = usuarioService.getFornecedores(fornecedorRequestDto.getUsername());
         Stream<Fornecedor> fornecedorStream = fornecedors.stream().filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
         Fornecedor fornecedorToSave = fornecedorStream.findAny().get();
+        if (fornecedorRequestDto.getRazaoSocial() != null) {
+            fornecedorToSave.setRazaoSocial(fornecedorRequestDto.getRazaoSocial());
+        } else if (fornecedorRequestDto.getStatus() != null) {
+            fornecedorToSave.setStatus(fornecedorRequestDto.getStatus());
+        }
         fornecedorToSave.setCnpj(fornecedorRequestDto.getCnpj());
-        fornecedorToSave.setRazaoSocial(fornecedorRequestDto.getRazaoSocial());
-        fornecedorToSave.setStatus(fornecedorRequestDto.getStatus());
         UsuarioRequestDto user = new UsuarioRequestDto();
         user.setUsername(fornecedorRequestDto.getUsername());
         user.setName(fornecedorRequestDto.getName());
@@ -116,12 +122,33 @@ public class FornecedorService {
 
     private void verifyCnpj(String username, String cnpj) throws InvalidValueException, NotFoundException {
         try {
-            usuarioService.getFornecedores(username).stream().filter(fornecedor -> fornecedor.getCnpj().equals(cnpj)).findAny().get();
+            Fornecedor fornecedor = usuarioService.getFornecedores(username).stream().filter(fornecedores -> fornecedores.getCnpj().equals(cnpj)).findAny().get();
         } catch (NoSuchElementException e) {
             throw new NotFoundException("Fornecedor não encontrado");
         }
     }
 
-
-
+//    public List<AgendaProduto> insertAgenda(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+//        verifyCnpj(fornecedorRequestDto.getUsername(), fornecedorRequestDto.getCnpj());
+//        List<Fornecedor> fornecedors = usuarioService.getFornecedores(fornecedorRequestDto.getUsername());
+//        Stream<Fornecedor> fornecedorStream = fornecedors.stream().filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
+//        Fornecedor fornecedor =  fornecedorStream.findAny().get();
+//        try {
+//            if (!fornecedor.getAgendaProdutos().isEmpty()) {
+//                try {
+//                    AgendaProduto agendaProd = fornecedor.getAgendaProdutos().stream().filter(agenda -> agenda.getDateToPayOrReceive().getDayOfWeek().equals(LocalDate.now().getDayOfWeek())).findAny().get();
+//                    if (agendaProd != null) {
+//                        throw new NotAuthorizedException("Recebimentos no mesmo dia não são permitidos");
+//                    }
+//                } catch (NoSuchElementException e) {
+//                    fornecedor.getAgendaProdutos().add(fornecedorRequestDto.getAgendaProdutos());
+//                }
+//            }
+//        } catch (NullPointerException e) {
+//            List<AgendaProduto> produto = new ArrayList<>();
+//            produto.add(fornecedorRequestDto.getAgendaProdutos());
+//            fornecedor.setAgendaProdutos(produto);
+//        }
+//        return fornecedor.getAgendaProdutos();
+//    }
 }

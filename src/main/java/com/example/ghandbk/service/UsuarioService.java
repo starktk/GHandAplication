@@ -2,6 +2,7 @@ package com.example.ghandbk.service;
 
 
 
+import com.example.ghandbk.collection.schedule.AgendaProduto;
 import com.example.ghandbk.collection.supplier.Fornecedor;
 import com.example.ghandbk.collection.user.Usuario;
 import com.example.ghandbk.dto.supllier.FornecedorDto;
@@ -15,9 +16,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,23 +53,10 @@ public class UsuarioService {
         if (usuarioRequestDto.getUsername() == null || usuarioRequestDto.getUsername().isBlank()) throw new InvalidValueException("Preencha o campo");
         if (usuarioRequestDto.getName() == null || usuarioRequestDto.getName().isBlank()) throw new InvalidValueException("Preencha o campo");
         if (usuarioRequestDto.getFornecedor() != null) {
-            try {
-                if (!user.getFornecedores().isEmpty()) {
-                    try {
-                        Fornecedor fornecedorToRemove = user.getFornecedores().stream().filter(fornecedor -> fornecedor.getCnpj().equals(usuarioRequestDto.getFornecedor().getCnpj())).findAny().get();
-                        if (fornecedorToRemove != null) {
-                            throw new NotAuthorizedException("Cnpj já existente");
-                        }
-                    } catch (NoSuchElementException e) {
-                        user.getFornecedores().add(usuarioRequestDto.getFornecedor());
-                    }
-                }
-            } catch (NullPointerException e) {
-
-                ArrayList<Fornecedor> fornecedors = new ArrayList<>();
-                fornecedors.add(usuarioRequestDto.getFornecedor());
-                user.setFornecedores(fornecedors);
-            }
+            insertFornecedor(user, usuarioRequestDto.getFornecedor());
+        }
+        if (usuarioRequestDto.getAgendaProduto() != null) {
+            insertAgendaProduto(user, usuarioRequestDto.getAgendaProduto());
         }
         user.setName(usuarioRequestDto.getName());
         user.setUsername(usuarioRequestDto.getUsername());
@@ -142,4 +132,43 @@ public class UsuarioService {
         usuario.setFornecedores(usuario.getFornecedores());
         usuarioRepo.save(usuario);
     }
+
+    private Usuario insertFornecedor(Usuario user, Fornecedor fornecedor) throws NotAuthorizedException {
+        try {
+            if (!user.getFornecedores().isEmpty()) {
+                try {
+                    Fornecedor fornecedorToRemove = user.getFornecedores().stream().filter(fornecedors -> fornecedors.getCnpj().equals(fornecedor.getCnpj())).findAny().get();
+                    if (fornecedorToRemove != null) {
+                        throw new NotAuthorizedException("Cnpj já existente");
+                    }
+                } catch (NoSuchElementException e) {
+                    user.getFornecedores().add(fornecedor);
+                }
+            }
+        } catch (NullPointerException e) {
+            ArrayList<Fornecedor> fornecedors = new ArrayList<>();
+            fornecedors.add(fornecedor);
+            user.setFornecedores(fornecedors);
+        }
+        return user;
+    }
+
+    private Usuario insertAgendaProduto(Usuario user, AgendaProduto agendaProduto) throws NotAuthorizedException {
+        try {
+            if (!user.getProdutos().isEmpty()) {
+                try {
+                    if (!agendaProduto.getDateToPayOrReceive().isAfter(LocalDate.now())) throw new NotAuthorizedException("Datas passadas não são aceitas");
+                    if (user.getProdutos().contains(agendaProduto)) throw new NotAuthorizedException("Já possui este agendamento");
+                } catch (NoSuchElementException e) {
+                    user.getProdutos().add(agendaProduto);
+                }
+            }
+        } catch (NullPointerException e) {
+            List<AgendaProduto> agenda = new ArrayList<>();
+            agenda.add(agendaProduto);
+            user.setProdutos(agenda);
+        }
+        return user;
+    }
+
 }
