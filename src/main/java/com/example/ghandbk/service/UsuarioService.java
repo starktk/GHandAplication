@@ -156,12 +156,9 @@ public class UsuarioService {
     private Usuario insertAgendaProduto(Usuario user, AgendaProduto agendaProduto) throws NotAuthorizedException {
         try {
             if (!user.getProdutos().isEmpty()) {
-                try {
-                    if (!agendaProduto.getDateToPayOrReceive().isAfter(LocalDate.now())) throw new NotAuthorizedException("Datas passadas não são aceitas");
-                    if (user.getProdutos().contains(agendaProduto)) throw new NotAuthorizedException("Já possui este agendamento");
-                } catch (NoSuchElementException e) {
-                    user.getProdutos().add(agendaProduto);
-                }
+                if (!agendaProduto.getDateToPayOrReceive().isAfter(LocalDate.now())) throw new NotAuthorizedException("Datas passadas não são aceitas");
+                if (user.getProdutos().contains(agendaProduto)) throw new NotAuthorizedException("Já possui este agendamento");
+                user.getProdutos().add(agendaProduto);
             }
         } catch (NullPointerException e) {
             List<AgendaProduto> agenda = new ArrayList<>();
