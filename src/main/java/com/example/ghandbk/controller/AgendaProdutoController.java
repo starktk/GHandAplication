@@ -32,8 +32,13 @@ public class AgendaProdutoController {
     }
 
     @DeleteMapping("deleteReceive")
-    public ResponseEntity deleteReceive(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException {
+    public ResponseEntity deleteReceive(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
         agendaService.deleteReceive(agendaProdutoRequestDto);
         return new ResponseEntity(HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping("updateStatus")
+    public ResponseEntity<AgendaProdDto> updateStatus(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        return new ResponseEntity(agendaService.modifyStatus(agendaProdutoRequestDto), HttpStatus.ACCEPTED);
     }
 }

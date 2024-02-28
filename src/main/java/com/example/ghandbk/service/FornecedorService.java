@@ -128,27 +128,4 @@ public class FornecedorService {
         }
     }
 
-//    public List<AgendaProduto> insertAgenda(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-//        verifyCnpj(fornecedorRequestDto.getUsername(), fornecedorRequestDto.getCnpj());
-//        List<Fornecedor> fornecedors = usuarioService.getFornecedores(fornecedorRequestDto.getUsername());
-//        Stream<Fornecedor> fornecedorStream = fornecedors.stream().filter(fornecedor -> fornecedor.getCnpj().equals(fornecedorRequestDto.getCnpj()));
-//        Fornecedor fornecedor =  fornecedorStream.findAny().get();
-//        try {
-//            if (!fornecedor.getAgendaProdutos().isEmpty()) {
-//                try {
-//                    AgendaProduto agendaProd = fornecedor.getAgendaProdutos().stream().filter(agenda -> agenda.getDateToPayOrReceive().getDayOfWeek().equals(LocalDate.now().getDayOfWeek())).findAny().get();
-//                    if (agendaProd != null) {
-//                        throw new NotAuthorizedException("Recebimentos no mesmo dia não são permitidos");
-//                    }
-//                } catch (NoSuchElementException e) {
-//                    fornecedor.getAgendaProdutos().add(fornecedorRequestDto.getAgendaProdutos());
-//                }
-//            }
-//        } catch (NullPointerException e) {
-//            List<AgendaProduto> produto = new ArrayList<>();
-//            produto.add(fornecedorRequestDto.getAgendaProdutos());
-//            fornecedor.setAgendaProdutos(produto);
-//        }
-//        return fornecedor.getAgendaProdutos();
-//    }
 }

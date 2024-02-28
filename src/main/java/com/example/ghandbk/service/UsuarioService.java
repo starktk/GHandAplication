@@ -6,6 +6,7 @@ import com.example.ghandbk.collection.schedule.AgendaProduto;
 import com.example.ghandbk.collection.supplier.Fornecedor;
 import com.example.ghandbk.collection.user.Usuario;
 import com.example.ghandbk.dto.schedule.AgendaProdDto;
+import com.example.ghandbk.dto.schedule.AgendaProdutoRequestDto;
 import com.example.ghandbk.dto.supllier.FornecedorDto;
 import com.example.ghandbk.dto.user.UsuarioDto;
 import com.example.ghandbk.dto.user.UsuarioRequestDto;
@@ -126,6 +127,34 @@ public class UsuarioService {
         return fornecedorDto;
     }
 
+    public AgendaProdDto updateAgendaProductsByStatus(UsuarioRequestDto usuarioRequestDto, String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (usuarioRequestDto.getUsername().isEmpty()) throw new InvalidValueException("Usuario inválido");
+        if (usuarioRequestDto.getName().isEmpty()) throw new InvalidValueException("Usuario inválido");
+        if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
+        Usuario user = usuarioRepo.findById(usuarioRequestDto.getUsername()).get();
+        if (usuarioRequestDto.getAgendaProduto() == null) throw new NotAuthorizedException("Agendamento inválido");
+        if (!user.getProdutos().isEmpty()) {
+            try {
+                List<AgendaProduto> agendaProdutos = user.getProdutos().stream().filter(prod -> prod.getDateToPayOrReceive().equals(usuarioRequestDto.getAgendaProduto().getDateToPayOrReceive())).toList();
+                if (agendaProdutos.isEmpty()) {
+                    throw new NotFoundException("Não há agenndamentos para este dia");
+                }
+                AgendaProduto agendaToRemove = agendaProdutos.stream().filter(produto -> produto.getFornecedor().getCnpj().equals(cnpj)).findAny().get();
+                user.getProdutos().remove(agendaToRemove);
+                user.getProdutos().add(usuarioRequestDto.getAgendaProduto());
+            } catch (NoSuchElementException e) {
+                throw new NotFoundException("Não há agendamentos neste dia para este cnpj");
+            }
+        }
+        user.setUsername(usuarioRequestDto.getUsername());
+        user.setName(usuarioRequestDto.getName());
+        usuarioRepo.save(user);
+        List<AgendaProdDto> agendaProdutosToFilter = user.getProdutos().stream()
+                .filter(prod -> prod.getDateToPayOrReceive()
+                        .equals(usuarioRequestDto.getAgendaProduto().getDateToPayOrReceive())).map(agenda -> new AgendaProdDto(agenda.getNameProduct(), agenda.getAmount(), agenda.getStatus(), agenda.getDateToPayOrReceive(), agenda.getFornecedor())).toList();
+        AgendaProdDto agendaToReturn = agendaProdutosToFilter.stream().findAny().get();
+        return agendaToReturn;
+    }
     public void deleteFornecedor(UsuarioRequestDto usuarioRequestDto) throws NotFoundException, InvalidValueException, NotAuthorizedException {
         if (usuarioRequestDto.getUsername() == null || usuarioRequestDto.getUsername().isEmpty()) throw new InvalidValueException("Usuario inválido");
         if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotAuthorizedException("Usuário não existe");
@@ -142,18 +171,22 @@ public class UsuarioService {
         usuarioRepo.save(usuario);
     }
 
-    public void deleteReceiveInAgenda(UsuarioRequestDto usuarioRequestDto) throws InvalidValueException, NotFoundException {
-        if (usuarioRequestDto.getUsername() == null|| usuarioRequestDto.getUsername().isEmpty()) throw new InvalidValueException("Usuario inválido");
-        if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
-        Usuario user = usuarioRepo.findById(usuarioRequestDto.getUsername()).get();
-        try {
-            AgendaProduto agenda = user.getProdutos().stream().filter(produto -> produto.equals(usuarioRequestDto.getAgendaProduto())).findAny().get();
-            if (!agenda.getStatus().equals(usuarioRequestDto.getAgendaProduto().getStatus())) throw new InvalidValueException("Status inválido para deletar");
-        } catch (NoSuchElementException e) {
-            throw new NotFoundException("Agendamento não encontrado");
+    public void deleteReceiveInAgenda(AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (agendaProdutoRequestDto.getUsername().isEmpty()) throw new InvalidValueException("Usuario inválido");
+        if (!usuarioRepo.existsById(agendaProdutoRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
+        Usuario user = usuarioRepo.findById(agendaProdutoRequestDto.getUsername()).get();
+        if (!user.getProdutos().isEmpty()) {
+            try {
+                List<AgendaProduto> agendaProdutos = user.getProdutos().stream().filter(produtos -> produtos.getDateToPayOrReceive().equals(agendaProdutoRequestDto.getDateToPayOrReceive())).toList();
+                if (agendaProdutos.isEmpty()) {
+                    throw new NotFoundException("Não há agenndamentos para este dia");
+                }
+                AgendaProduto agenda = agendaProdutos.stream().filter(agendaProduto -> agendaProduto.getFornecedor().getCnpj().equals(agendaProdutoRequestDto.getCnpj())).findAny().get();
+                user.getProdutos().remove(agenda);
+            } catch (NoSuchElementException e) {
+                throw new NotAuthorizedException("Não há produtos agendados");
+            }
         }
-        AgendaProduto produto = user.getProdutos().stream().filter(prod -> prod.equals(usuarioRequestDto.getAgendaProduto())).findAny().get();
-        user.getProdutos().remove(produto);
         user.setProdutos(user.getProdutos());
         usuarioRepo.save(user);
     }
@@ -181,16 +214,15 @@ public class UsuarioService {
     private Usuario insertAgendaProduto(Usuario user, AgendaProduto agendaProduto) throws NotAuthorizedException {
         try {
             if (!user.getProdutos().isEmpty()) {
-                if (!agendaProduto.getDateToPayOrReceive().isAfter(LocalDate.now())) throw new NotAuthorizedException("Datas passadas não são aceitas");
-                try {
-                    List<AgendaProduto> agenda = user.getProdutos().stream().filter(prod -> prod.getDateToPayOrReceive().equals(agendaProduto.getDateToPayOrReceive())).toList();
-                    if (!agenda.isEmpty()) {
-                        AgendaProduto forne = agenda.stream().filter(prod -> prod.getFornecedor().getCnpj().equals(agendaProduto.getFornecedor().getCnpj())).findAny().get();
-                        if (forne != null) throw new NotAuthorizedException("Já possui um agendamento para este dia com este fornecedor");
-                    }
-                } catch (NoSuchElementException e) {
-                    user.getProdutos().add(agendaProduto);
+                if (!agendaProduto.getDateToPayOrReceive().isAfter(LocalDate.now()))
+                    throw new NotAuthorizedException("Datas passadas não são aceitas");
+                List<AgendaProduto> agenda = user.getProdutos().stream().filter(prod -> prod.getDateToPayOrReceive().equals(agendaProduto.getDateToPayOrReceive())).toList();
+                if (!agenda.isEmpty()) {
+                    AgendaProduto forne = agenda.stream().filter(prod -> prod.getFornecedor().getCnpj().equals(agendaProduto.getFornecedor().getCnpj())).findAny().get();
+                    if (forne != null)
+                        throw new NotAuthorizedException("Já possui um agendamento para este dia com este fornecedor");
                 }
+                user.getProdutos().add(agendaProduto);
             }
         } catch (NullPointerException e) {
             List<AgendaProduto> agenda = new ArrayList<>();
@@ -199,6 +231,5 @@ public class UsuarioService {
         }
         return user;
     }
-
 
 }
