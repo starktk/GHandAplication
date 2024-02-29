@@ -74,7 +74,7 @@ public class UsuarioService {
         try {
             List<FornecedorDto> fornecedoresToReturn = usuario.getFornecedores().stream()
                     .map(a -> new FornecedorDto
-                            (a.getRazaoSocial(), a.getCnpj(), a.getStatus())).collect(Collectors.toList());
+                            (a.getRazaoSocial(), a.getCnpj(), a.getStatus(), a.getHistorico())).collect(Collectors.toList());
             userReturn.setFornecedoresDto(fornecedoresToReturn);
         } catch (NullPointerException e) {
             return userReturn;
@@ -121,7 +121,7 @@ public class UsuarioService {
         user.setName(usuarioRequestDto.getName());
         usuarioRepo.save(user);
         List<Fornecedor> fornecedores = getFornecedores(usuarioRequestDto.getUsername());
-        List<FornecedorDto> fornecedorDtos = fornecedores.stream().map(a -> new FornecedorDto(a.getRazaoSocial(), a.getCnpj(), a.getStatus())).collect(Collectors.toList());
+        List<FornecedorDto> fornecedorDtos = fornecedores.stream().map(a -> new FornecedorDto(a.getRazaoSocial(), a.getCnpj(), a.getStatus(), a.getHistorico())).collect(Collectors.toList());
         Stream<FornecedorDto> fornecedorToReturn = fornecedorDtos.stream().filter(fornecedo -> fornecedo.getCnpj().equals(usuarioRequestDto.getFornecedor().getCnpj()));
         FornecedorDto fornecedorDto = fornecedorToReturn.findAny().get();
         return fornecedorDto;
@@ -130,7 +130,7 @@ public class UsuarioService {
     public AgendaProdDto updateAgendaProductsByStatus(UsuarioRequestDto usuarioRequestDto, String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {
         if (usuarioRequestDto.getUsername().isEmpty()) throw new InvalidValueException("Usuario inválido");
         if (usuarioRequestDto.getName().isEmpty()) throw new InvalidValueException("Usuario inválido");
-        if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
+//        if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
         Usuario user = usuarioRepo.findById(usuarioRequestDto.getUsername()).get();
         if (usuarioRequestDto.getAgendaProduto() == null) throw new NotAuthorizedException("Agendamento inválido");
         if (!user.getProdutos().isEmpty()) {

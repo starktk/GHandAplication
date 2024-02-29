@@ -1,7 +1,9 @@
 package com.example.ghandbk.service;
 
 import com.example.ghandbk.collection.enums.SituacaoProduto;
+import com.example.ghandbk.collection.enums.TipoHistorico;
 import com.example.ghandbk.collection.schedule.AgendaProduto;
+import com.example.ghandbk.collection.supplier.HistoricoProduto;
 import com.example.ghandbk.dto.schedule.AgendaProdDto;
 import com.example.ghandbk.dto.schedule.AgendaProdutoRequestDto;
 import com.example.ghandbk.dto.supllier.FornecedorDto;
@@ -14,13 +16,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @Service
-public class AgendaService {
+public class AgendaProductService {
 
     private final FornecedorService fornecedorService;
     private final UsuarioService usuarioService;
@@ -88,7 +89,23 @@ public class AgendaService {
         user.setUsername(agendaProdutoRequestDto.getUsername());
         user.setName(agendaProdutoRequestDto.getName());
         user.setAgendaProduto(agendaToModity);
-        return usuarioService.updateAgendaProductsByStatus(user, agendaProdutoRequestDto.getCnpj());
+        AgendaProdDto agendaToReturn = usuarioService.updateAgendaProductsByStatus(user, agendaProdutoRequestDto.getCnpj());
+        insertAgendaInHistorico(agendaToReturn, agendaProdutoRequestDto.getCnpj(), agendaProdutoRequestDto.getUsername());
+        return agendaToReturn;
     }
 
+    private void insertAgendaInHistorico(AgendaProdDto agendaProdDto, String cnpj, String username) throws NotAuthorizedException, InvalidValueException, NotFoundException {
+        if (agendaProdDto == null) throw new NotAuthorizedException("Recebimento inválido");
+        if (!agendaProdDto.getStatus().equals(SituacaoProduto.RECEBIDO)) throw new NotAuthorizedException("Operação inválida");
+        if (cnpj.isEmpty()) throw new NotAuthorizedException("Cnpj inválido");
+        if (username.isEmpty()) throw new NotAuthorizedException("Usuario inválido");
+        FornecedorRequestDto fornecedorRequestDto = new FornecedorRequestDto();
+        fornecedorRequestDto.setUsername(username);
+        fornecedorRequestDto.setCnpj(cnpj);
+        HistoricoProduto historico = new HistoricoProduto();
+        historico.setHistoricoTipo(TipoHistorico.PAGAMENTO);
+        historico.setAgendaProdDto(agendaProdDto);
+        fornecedorRequestDto.setHistoricoProduto(historico);
+        fornecedorService.updateFornecedor(fornecedorRequestDto);
+    }
 }

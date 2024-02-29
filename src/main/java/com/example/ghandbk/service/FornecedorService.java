@@ -1,9 +1,7 @@
 package com.example.ghandbk.service;
 
 import com.example.ghandbk.collection.enums.Situacao;
-import com.example.ghandbk.collection.schedule.AgendaProduto;
 import com.example.ghandbk.collection.supplier.Fornecedor;
-import com.example.ghandbk.dto.schedule.AgendaProdutoRequestDto;
 import com.example.ghandbk.dto.supllier.FornecedorDto;
 import com.example.ghandbk.dto.supllier.FornecedorRequestDto;
 import com.example.ghandbk.dto.user.UsuarioRequestDto;
@@ -12,10 +10,8 @@ import com.example.ghandbk.exceptions.NotAuthorizedException;
 import com.example.ghandbk.exceptions.NotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -44,7 +40,7 @@ public class FornecedorService {
 
     public List<FornecedorDto> findAllFornecedores(String username) throws InvalidValueException, NotFoundException {
        List<Fornecedor> fornecedores = usuarioService.getFornecedores(username);
-       List<FornecedorDto> fornecedorDtos = fornecedores.stream().map(a -> new FornecedorDto(a.getRazaoSocial(), a.getCnpj(), a.getStatus())).collect(Collectors.toList());
+       List<FornecedorDto> fornecedorDtos = fornecedores.stream().map(a -> new FornecedorDto(a.getRazaoSocial(), a.getCnpj(), a.getStatus(), a.getHistorico())).collect(Collectors.toList());
        return fornecedorDtos;
     }
 
@@ -86,6 +82,11 @@ public class FornecedorService {
         } else if (fornecedorRequestDto.getStatus() != null) {
             fornecedorToSave.setStatus(fornecedorRequestDto.getStatus());
         }
+        if (fornecedorRequestDto.getHistoricoPagamento() != null) {
+            fornecedorToSave.setHistorico(insertHistory(fornecedorRequestDto));
+        } else if (fornecedorRequestDto.getHistoricoProduto() != null) {
+            fornecedorToSave.setHistorico(insertHistory(fornecedorRequestDto));
+        }
         fornecedorToSave.setCnpj(fornecedorRequestDto.getCnpj());
         UsuarioRequestDto user = new UsuarioRequestDto();
         user.setUsername(fornecedorRequestDto.getUsername());
@@ -126,6 +127,29 @@ public class FornecedorService {
         } catch (NoSuchElementException e) {
             throw new NotFoundException("Fornecedor não encontrado");
         }
+    }
+    private List insertHistory(FornecedorRequestDto fornecedorRequestDto) throws InvalidValueException, NotFoundException {
+        List<Fornecedor> fornecedores = usuarioService.getFornecedores(fornecedorRequestDto.getUsername());
+        Fornecedor fornecedor = fornecedores.stream().filter(forne -> forne.getCnpj().equals(fornecedorRequestDto.getCnpj())).findAny().get();
+        if (fornecedor != null) {
+            try {
+                if (fornecedorRequestDto.getHistoricoPagamento() != null) {
+                    fornecedor.getHistorico().add(fornecedorRequestDto.getHistoricoPagamento());
+                } else if (fornecedorRequestDto.getHistoricoProduto() != null) {
+                    fornecedor.getHistorico().add(fornecedorRequestDto.getHistoricoProduto());
+                }
+            } catch (NullPointerException e) {
+                List<Object> f1 = new ArrayList<>();
+                if (fornecedorRequestDto.getHistoricoProduto() != null) {
+                    f1.add(fornecedorRequestDto.getHistoricoProduto());
+                } else if (fornecedorRequestDto.getHistoricoPagamento() != null) {
+                    f1.add(fornecedorRequestDto.getHistoricoPagamento());
+                }
+                fornecedor.setHistorico(f1);
+            }
+        }
+
+        return fornecedor.getHistorico();
     }
 
 }

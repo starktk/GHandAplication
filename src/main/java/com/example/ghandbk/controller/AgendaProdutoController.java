@@ -6,7 +6,7 @@ import com.example.ghandbk.dto.schedule.AgendaProdutoRequestDto;
 import com.example.ghandbk.exceptions.InvalidValueException;
 import com.example.ghandbk.exceptions.NotAuthorizedException;
 import com.example.ghandbk.exceptions.NotFoundException;
-import com.example.ghandbk.service.AgendaService;
+import com.example.ghandbk.service.AgendaProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,26 +19,26 @@ import java.util.List;
 @RequestMapping("/agenda")
 public class AgendaProdutoController {
 
-    private final AgendaService agendaService;
+    private final AgendaProductService agendaProductService;
 
     @PostMapping("/setDateToReceive")
     public ResponseEntity<AgendaProduto> setDateToReceive(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        return new ResponseEntity(agendaService.insertNewSchedule(agendaProdutoRequestDto), HttpStatus.CREATED);
+        return new ResponseEntity(agendaProductService.insertNewSchedule(agendaProdutoRequestDto), HttpStatus.CREATED);
     }
 
     @GetMapping("/findAgendaByMonth")
     public ResponseEntity<List<AgendaProdDto>> findAgendaByMonth(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException {
-        return new ResponseEntity(agendaService.findAgendaByMonth(agendaProdutoRequestDto), HttpStatus.ACCEPTED);
+        return new ResponseEntity(agendaProductService.findAgendaByMonth(agendaProdutoRequestDto), HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("deleteReceive")
     public ResponseEntity deleteReceive(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        agendaService.deleteReceive(agendaProdutoRequestDto);
+        agendaProductService.deleteReceive(agendaProdutoRequestDto);
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
     @PutMapping("updateStatus")
     public ResponseEntity<AgendaProdDto> updateStatus(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        return new ResponseEntity(agendaService.modifyStatus(agendaProdutoRequestDto), HttpStatus.ACCEPTED);
+        return new ResponseEntity(agendaProductService.modifyStatus(agendaProdutoRequestDto), HttpStatus.ACCEPTED);
     }
 }
