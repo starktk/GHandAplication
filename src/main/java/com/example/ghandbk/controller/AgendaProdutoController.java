@@ -1,8 +1,8 @@
 package com.example.ghandbk.controller;
 
 import com.example.ghandbk.collection.schedule.AgendaProduto;
-import com.example.ghandbk.dto.schedule.AgendaProdDto;
-import com.example.ghandbk.dto.schedule.AgendaProdutoRequestDto;
+import com.example.ghandbk.dto.schedule.product.AgendaProdDto;
+import com.example.ghandbk.dto.schedule.product.AgendaProdutoRequestDto;
 import com.example.ghandbk.exceptions.InvalidValueException;
 import com.example.ghandbk.exceptions.NotAuthorizedException;
 import com.example.ghandbk.exceptions.NotFoundException;

@@ -5,8 +5,8 @@ package com.example.ghandbk.service;
 import com.example.ghandbk.collection.schedule.AgendaProduto;
 import com.example.ghandbk.collection.supplier.Fornecedor;
 import com.example.ghandbk.collection.user.Usuario;
-import com.example.ghandbk.dto.schedule.AgendaProdDto;
-import com.example.ghandbk.dto.schedule.AgendaProdutoRequestDto;
+import com.example.ghandbk.dto.schedule.product.AgendaProdDto;
+import com.example.ghandbk.dto.schedule.product.AgendaProdutoRequestDto;
 import com.example.ghandbk.dto.supllier.FornecedorDto;
 import com.example.ghandbk.dto.user.UsuarioDto;
 import com.example.ghandbk.dto.user.UsuarioRequestDto;
@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

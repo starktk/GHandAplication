@@ -13,4 +13,6 @@ public class HistoricoPagamento {
     private SituacaoPagamento situacaoPagamento;
 
     private FornecedorDto fornecedorDto;
+
+    private TipoPagamento tipoPagamento;
 }

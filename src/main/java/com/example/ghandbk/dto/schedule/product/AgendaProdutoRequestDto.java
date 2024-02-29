@@ -1,4 +1,4 @@
-package com.example.ghandbk.dto.schedule;
+package com.example.ghandbk.dto.schedule.product;
 
 import com.example.ghandbk.collection.enums.SituacaoProduto;
 import lombok.Getter;

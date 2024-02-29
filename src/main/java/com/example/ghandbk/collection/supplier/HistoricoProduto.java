@@ -1,6 +1,6 @@
 package com.example.ghandbk.collection.supplier;
 
-import com.example.ghandbk.dto.schedule.AgendaProdDto;
+import com.example.ghandbk.dto.schedule.product.AgendaProdDto;
 import lombok.Getter;
 import lombok.Setter;
 
