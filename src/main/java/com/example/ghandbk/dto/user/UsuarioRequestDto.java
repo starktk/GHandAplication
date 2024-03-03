@@ -1,5 +1,6 @@
 package com.example.ghandbk.dto.user;
 
+import com.example.ghandbk.collection.schedule.AgendaPagamento;
 import com.example.ghandbk.collection.schedule.AgendaProduto;
 import com.example.ghandbk.collection.supplier.Fornecedor;
 import lombok.Getter;
@@ -14,4 +15,5 @@ public class UsuarioRequestDto {
     private String password;
     private Fornecedor fornecedor;
     private AgendaProduto agendaProduto;
+    private AgendaPagamento agendaPagamento;
 }

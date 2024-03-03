@@ -9,4 +9,5 @@ import lombok.Setter;
 public class HistoricoProduto extends Historico {
 
     private AgendaProdDto agendaProdDto;
+
 }

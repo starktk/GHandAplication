@@ -1,5 +1,6 @@
 package com.example.ghandbk.collection.user;
 
+import com.example.ghandbk.collection.schedule.AgendaPagamento;
 import com.example.ghandbk.collection.schedule.AgendaProduto;
 import com.example.ghandbk.collection.supplier.Fornecedor;
 import lombok.AllArgsConstructor;
@@ -25,5 +26,6 @@ public class Usuario {
     private String password;
     private List<Fornecedor> fornecedores;
     private List<AgendaProduto> produtos;
+    private List<AgendaPagamento> pagamentos;
 
 }

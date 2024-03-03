@@ -16,7 +16,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/agenda")
+@RequestMapping("/agendaProduto")
 public class AgendaProdutoController {
 
     private final AgendaProductService agendaProductService;

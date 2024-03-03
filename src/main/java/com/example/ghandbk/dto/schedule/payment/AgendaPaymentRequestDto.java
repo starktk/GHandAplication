@@ -13,10 +13,10 @@ import java.time.LocalDate;
 public class AgendaPaymentRequestDto {
 
     private String username;
+    private String name;
     private String cnpj;
     private Double valueToPay;
     private SituacaoPagamento situacaoPagamento;
-
     private LocalDate dateToPayOrReceive;
 
 

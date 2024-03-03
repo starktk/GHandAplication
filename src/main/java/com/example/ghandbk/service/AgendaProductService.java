@@ -33,14 +33,10 @@ public class AgendaProductService {
         if (agendaProdutoRequestDto.getNameProduct() == null || agendaProdutoRequestDto.getNameProduct().isBlank()) throw new InvalidValueException("Preencha o campo");
         if (agendaProdutoRequestDto.getStatus() == SituacaoProduto.RECEBIDO) throw new InvalidValueException("Situação inválida");
         AgendaProduto agendaProduto = objectMapper.convertValue(agendaProdutoRequestDto, AgendaProduto.class);
-        FornecedorRequestDto fornecedorRequestDto = new FornecedorRequestDto();
-        fornecedorRequestDto.setUsername(agendaProdutoRequestDto.getUsername());
-        fornecedorRequestDto.setCnpj(agendaProdutoRequestDto.getCnpj());
+        FornecedorRequestDto fornecedorRequestDto = FornecedorRequestDto.builder().username(agendaProdutoRequestDto.getUsername()).cnpj(agendaProdutoRequestDto.getCnpj()).build();
         FornecedorDto fornecedorDto = fornecedorService.getFornecedorByCnpj(fornecedorRequestDto);
         agendaProduto.setFornecedor(fornecedorDto);
-        UsuarioRequestDto user = new UsuarioRequestDto();
-        user.setUsername(agendaProdutoRequestDto.getUsername());
-        user.setName(agendaProdutoRequestDto.getName());
+        UsuarioRequestDto user = getInstanceForUserRQDto(agendaProdutoRequestDto.getUsername(), agendaProdutoRequestDto.getName());
         user.setAgendaProduto(agendaProduto);
         usuarioService.updateUser(user);
         return agendaProduto;
@@ -51,7 +47,7 @@ public class AgendaProductService {
         List<AgendaProduto> agendaProdutos = usuarioService.getAgendaProdutcs(agendaProdutoRequestDto.getUsername());
         List<AgendaProduto> agenda = agendaProdutos.stream().filter(prod -> prod.getDateToPayOrReceive().getMonth().equals(agendaProdutoRequestDto.getDateToPayOrReceive().getMonth())).toList();
         if (agenda.isEmpty()) throw new NotFoundException("Não foram encontrados recebimentos para o mês selecionado");
-        List<AgendaProdDto> agendaToReturn = agenda.stream().map(agendaP -> new AgendaProdDto(agendaP.getNameProduct(), agendaP.getAmount(), agendaP.getStatus(), agendaP.getDateToPayOrReceive() , agendaP.getFornecedor())).toList();
+        List<AgendaProdDto> agendaToReturn = agenda.stream().map(agendaP -> AgendaProdDto.builder().nameProduct(agendaP.getNameProduct()).amount(agendaP.getAmount()).status(agendaP.getStatus()).dateToPayOrReceive(agendaP.getDateToPayOrReceive()).fornecedorDto(agendaP.getFornecedor()).build()).toList();
         return agendaToReturn;
     }
 
@@ -99,13 +95,20 @@ public class AgendaProductService {
         if (!agendaProdDto.getStatus().equals(SituacaoProduto.RECEBIDO)) throw new NotAuthorizedException("Operação inválida");
         if (cnpj.isEmpty()) throw new NotAuthorizedException("Cnpj inválido");
         if (username.isEmpty()) throw new NotAuthorizedException("Usuario inválido");
-        FornecedorRequestDto fornecedorRequestDto = new FornecedorRequestDto();
-        fornecedorRequestDto.setUsername(username);
-        fornecedorRequestDto.setCnpj(cnpj);
+        FornecedorRequestDto fornecedorRequestDto = FornecedorRequestDto.builder().username(username).cnpj(cnpj).build();
         HistoricoProduto historico = new HistoricoProduto();
-        historico.setHistoricoTipo(TipoHistorico.PAGAMENTO);
+        historico.setHistoricoTipo(TipoHistorico.PRODUTO);
         historico.setAgendaProdDto(agendaProdDto);
         fornecedorRequestDto.setHistoricoProduto(historico);
         fornecedorService.updateFornecedor(fornecedorRequestDto);
     }
+
+    private UsuarioRequestDto getInstanceForUserRQDto(String username, String name) {
+        UsuarioRequestDto userToReturn = new UsuarioRequestDto();
+        userToReturn.setUsername(username);
+        userToReturn.setName(name);
+        return userToReturn;
+    }
+
+
 }

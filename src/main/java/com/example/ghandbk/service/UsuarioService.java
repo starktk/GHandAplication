@@ -2,9 +2,12 @@ package com.example.ghandbk.service;
 
 
 
+import com.example.ghandbk.collection.schedule.AgendaPagamento;
 import com.example.ghandbk.collection.schedule.AgendaProduto;
 import com.example.ghandbk.collection.supplier.Fornecedor;
 import com.example.ghandbk.collection.user.Usuario;
+import com.example.ghandbk.dto.schedule.payment.AgendaPaymentDto;
+import com.example.ghandbk.dto.schedule.payment.AgendaPaymentRequestDto;
 import com.example.ghandbk.dto.schedule.product.AgendaProdDto;
 import com.example.ghandbk.dto.schedule.product.AgendaProdutoRequestDto;
 import com.example.ghandbk.dto.supllier.FornecedorDto;
@@ -52,12 +55,15 @@ public class UsuarioService {
         if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotAuthorizedException("Usuário inválido");
         Usuario user = usuarioRepo.findById(usuarioRequestDto.getUsername()).get();
         if (usuarioRequestDto.getUsername() == null || usuarioRequestDto.getUsername().isBlank()) throw new InvalidValueException("Preencha o campo");
-        if (usuarioRequestDto.getName() == null || usuarioRequestDto.getName().isBlank()) throw new InvalidValueException("Preencha o campo");
+        if (usuarioRequestDto.getName().isEmpty()) throw new InvalidValueException("Preencha o campo");
         if (usuarioRequestDto.getFornecedor() != null) {
             insertFornecedor(user, usuarioRequestDto.getFornecedor());
         }
         if (usuarioRequestDto.getAgendaProduto() != null) {
             insertAgendaProduto(user, usuarioRequestDto.getAgendaProduto());
+        }
+        if (usuarioRequestDto.getAgendaPagamento() != null) {
+            insertAgendaPagamento(user, usuarioRequestDto.getAgendaPagamento());
         }
         user.setName(usuarioRequestDto.getName());
         user.setUsername(usuarioRequestDto.getUsername());
@@ -98,8 +104,16 @@ public class UsuarioService {
         if (username.isBlank()) throw new InvalidValueException("Username inválido");
         if (!usuarioRepo.existsById(username)) throw new NotFoundException("Usuário não encontrado");
         Usuario user = usuarioRepo.findById(username).get();
-        if (user.getProdutos().isEmpty()) throw new NotFoundException("Não há recebimentos agendados");
+        if (user.getProdutos().isEmpty()) throw new NotFoundException("Não há produtos agendados");
         return user.getProdutos();
+    }
+
+    public List<AgendaPagamento> getAgendaPayments(String username) throws InvalidValueException, NotFoundException {
+        if (username.isBlank()) throw new InvalidValueException("Username inválido");
+        if (!usuarioRepo.existsById(username)) throw new NotFoundException("Usuário não encontrado");
+        Usuario user = usuarioRepo.findById(username).get();
+        if (user.getPagamentos().isEmpty()) throw new NotFoundException("Não há pagamentos agendados");
+        return user.getPagamentos();
     }
 
     public FornecedorDto updateFornecedor(UsuarioRequestDto usuarioRequestDto) throws NotAuthorizedException, InvalidValueException, NotFoundException {
@@ -129,14 +143,14 @@ public class UsuarioService {
     public AgendaProdDto updateAgendaProductsByStatus(UsuarioRequestDto usuarioRequestDto, String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {
         if (usuarioRequestDto.getUsername().isEmpty()) throw new InvalidValueException("Usuario inválido");
         if (usuarioRequestDto.getName().isEmpty()) throw new InvalidValueException("Usuario inválido");
-//        if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
+        if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
         Usuario user = usuarioRepo.findById(usuarioRequestDto.getUsername()).get();
         if (usuarioRequestDto.getAgendaProduto() == null) throw new NotAuthorizedException("Agendamento inválido");
         if (!user.getProdutos().isEmpty()) {
             try {
                 List<AgendaProduto> agendaProdutos = user.getProdutos().stream().filter(prod -> prod.getDateToPayOrReceive().equals(usuarioRequestDto.getAgendaProduto().getDateToPayOrReceive())).toList();
                 if (agendaProdutos.isEmpty()) {
-                    throw new NotFoundException("Não há agenndamentos para este dia");
+                    throw new NotFoundException("Não há produtos agendados para este dia");
                 }
                 AgendaProduto agendaToRemove = agendaProdutos.stream().filter(produto -> produto.getFornecedor().getCnpj().equals(cnpj)).findAny().get();
                 user.getProdutos().remove(agendaToRemove);
@@ -150,9 +164,36 @@ public class UsuarioService {
         usuarioRepo.save(user);
         List<AgendaProdDto> agendaProdutosToFilter = user.getProdutos().stream()
                 .filter(prod -> prod.getDateToPayOrReceive()
-                        .equals(usuarioRequestDto.getAgendaProduto().getDateToPayOrReceive())).map(agenda -> new AgendaProdDto(agenda.getNameProduct(), agenda.getAmount(), agenda.getStatus(), agenda.getDateToPayOrReceive(), agenda.getFornecedor())).toList();
-        AgendaProdDto agendaToReturn = agendaProdutosToFilter.stream().findAny().get();
+                        .equals(usuarioRequestDto.getAgendaProduto().getDateToPayOrReceive())).map(agenda -> AgendaProdDto.builder().nameProduct(agenda.getNameProduct()).amount(agenda.getAmount()).status(agenda.getStatus()).dateToPayOrReceive(agenda.getDateToPayOrReceive()).build()).toList();
+        AgendaProdDto agendaToReturn = agendaProdutosToFilter.stream().filter(filtro -> filtro.getFornecedorDto().getCnpj().equals(usuarioRequestDto.getAgendaProduto().getFornecedor().getCnpj())).findAny().get();
         return agendaToReturn;
+    }
+
+    public AgendaPaymentDto updatePaymentByStatus(UsuarioRequestDto usuarioRequestDto, String cnpj) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        if (usuarioRequestDto.getUsername().isEmpty()) throw new InvalidValueException("Usuario inválido");
+        if (usuarioRequestDto.getName().isEmpty()) throw new InvalidValueException("Usuario inválido");
+        if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
+        Usuario user = usuarioRepo.findById(usuarioRequestDto.getUsername()).get();
+        if (usuarioRequestDto.getAgendaPagamento() == null) throw new NotAuthorizedException("Agendamento inválido");
+        if (!user.getPagamentos().isEmpty()) {
+            try {
+                List<AgendaPagamento> pagamentos = user.getPagamentos().stream().filter(pay -> pay.getDateToPayOrReceive().equals(usuarioRequestDto.getAgendaPagamento().getDateToPayOrReceive())).toList();
+                if (pagamentos.isEmpty()) {
+                    throw new NotFoundException("Não há pagamentos agendados para este dia");
+                }
+                AgendaPagamento agendaToRemove = pagamentos.stream().filter(payRemove -> payRemove.getFornecedorDto().getCnpj().equals(cnpj)).findAny().get();
+                user.getPagamentos().remove(agendaToRemove);
+                user.getPagamentos().add(usuarioRequestDto.getAgendaPagamento());
+            } catch (NoSuchElementException e) {
+                throw new NotFoundException("Não há agendamentos neste dia para este cnpj");
+            }
+        }
+        user.setUsername(usuarioRequestDto.getUsername());
+        user.setName(usuarioRequestDto.getName());
+        usuarioRepo.save(user);
+        List<AgendaPaymentDto> agendaToReturn = user.getPagamentos().stream().filter(payment -> payment.getDateToPayOrReceive().equals(usuarioRequestDto.getAgendaPagamento().getDateToPayOrReceive())).map(newAgenda -> AgendaPaymentDto.builder().valueToPay(newAgenda.getValueToPay()).dateToPayOrReceive(newAgenda.getDateToPayOrReceive()).situacaoPagamento(newAgenda.getSituacaoPagamento()).build()).toList();
+        AgendaPaymentDto paymentToReturn = agendaToReturn.stream().filter(pay -> pay.getFornecedorDto().getCnpj().equals(cnpj)).findAny().get();
+        return paymentToReturn;
     }
     public void deleteFornecedor(UsuarioRequestDto usuarioRequestDto) throws NotFoundException, InvalidValueException, NotAuthorizedException {
         if (usuarioRequestDto.getUsername() == null || usuarioRequestDto.getUsername().isEmpty()) throw new InvalidValueException("Usuario inválido");
@@ -171,7 +212,7 @@ public class UsuarioService {
     }
 
     public void deleteReceiveInAgenda(AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        if (agendaProdutoRequestDto.getUsername().isEmpty()) throw new InvalidValueException("Usuario inválido");
+        if (agendaProdutoRequestDto.getUsername().isEmpty()) throw new NotAuthorizedException("Usuario inválido");
         if (!usuarioRepo.existsById(agendaProdutoRequestDto.getUsername())) throw new NotFoundException("Usuário não encontrado");
         Usuario user = usuarioRepo.findById(agendaProdutoRequestDto.getUsername()).get();
         if (!user.getProdutos().isEmpty()) {
@@ -187,6 +228,27 @@ public class UsuarioService {
             }
         }
         user.setProdutos(user.getProdutos());
+        usuarioRepo.save(user);
+    }
+
+    public void deletePaymentInAgenda(AgendaPaymentRequestDto agendaPaymentRequestDto) throws NotAuthorizedException, NotFoundException {
+        if (agendaPaymentRequestDto.getUsername().isEmpty()) throw new NotAuthorizedException("Usuario inválido");
+        if (!usuarioRepo.existsById(agendaPaymentRequestDto.getUsername())) throw new NotFoundException("Usuario não encontrado");
+        Usuario user = usuarioRepo.findById(agendaPaymentRequestDto.getUsername()).get();
+        if (!user.getPagamentos().isEmpty()) {
+            try {
+                List<AgendaPagamento> agendaPagamentos = user.getPagamentos().stream().filter(
+                        agendaPagamento -> agendaPagamento.getDateToPayOrReceive().equals(agendaPaymentRequestDto.getDateToPayOrReceive())).toList();
+                if (agendaPagamentos.isEmpty()) {
+                    throw new NotFoundException("Não há agendamentos para este dia");
+                }
+                AgendaPagamento agenda = agendaPagamentos.stream().filter(pagamento -> pagamento.getFornecedorDto().getCnpj().equals(agendaPaymentRequestDto.getCnpj())).findAny().get();
+                user.getPagamentos().remove(agenda);
+            } catch (NoSuchElementException e) {
+                throw new NotAuthorizedException("Não há pagamentos agendados");
+            }
+        }
+        user.setPagamentos(user.getPagamentos());
         usuarioRepo.save(user);
     }
 
@@ -219,7 +281,7 @@ public class UsuarioService {
                 if (!agenda.isEmpty()) {
                     AgendaProduto forne = agenda.stream().filter(prod -> prod.getFornecedor().getCnpj().equals(agendaProduto.getFornecedor().getCnpj())).findAny().get();
                     if (forne != null)
-                        throw new NotAuthorizedException("Já possui um agendamento para este dia com este fornecedor");
+                        throw new NotAuthorizedException("Já possui um produto agendado para este dia com este fornecedor");
                 }
                 user.getProdutos().add(agendaProduto);
             }
@@ -231,4 +293,24 @@ public class UsuarioService {
         return user;
     }
 
+    private Usuario insertAgendaPagamento(Usuario user, AgendaPagamento agendaPagamento) throws NotAuthorizedException {
+        try {
+            if (!user.getPagamentos().isEmpty()) {
+                if (!agendaPagamento.getDateToPayOrReceive().isAfter(LocalDate.now()))
+                    throw new NotAuthorizedException("Datas passadas não são aceitas");
+                List<AgendaPagamento> agenda = user.getPagamentos().stream().filter(prod -> prod.getDateToPayOrReceive().equals(agendaPagamento.getDateToPayOrReceive())).toList();
+                if (!agenda.isEmpty()) {
+                    AgendaPagamento forne = agenda.stream().filter(payment -> payment.getFornecedorDto().getCnpj().equals(agendaPagamento.getFornecedorDto().getCnpj())).findAny().get();
+                    if (forne != null)
+                        throw new NotAuthorizedException("Já possui um pagamento agendado para este dia com este fornecedor");
+                }
+                user.getPagamentos().add(agendaPagamento);
+            }
+        } catch (NullPointerException e) {
+            List<AgendaPagamento> agenda = new ArrayList<>();
+            agenda.add(agendaPagamento);
+            user.setPagamentos(agenda);
+        }
+        return user;
+    }
 }
