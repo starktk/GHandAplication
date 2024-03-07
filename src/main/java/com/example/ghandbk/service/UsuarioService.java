@@ -51,7 +51,7 @@ public class UsuarioService {
         usuarioRepo.delete(usuarioRepo.findUser(usuarioRequestDto.getUsername(), usuarioRequestDto.getPassword()));
     }
 
-    public UsuarioDto updateUser(UsuarioRequestDto usuarioRequestDto) throws InvalidValueException, NotAuthorizedException, NotFoundException {
+    public Usuario updateUser(UsuarioRequestDto usuarioRequestDto) throws InvalidValueException, NotAuthorizedException, NotFoundException {
         if (!usuarioRepo.existsById(usuarioRequestDto.getUsername())) throw new NotAuthorizedException("Usuário inválido");
         Usuario user = usuarioRepo.findById(usuarioRequestDto.getUsername()).get();
         if (usuarioRequestDto.getUsername() == null || usuarioRequestDto.getUsername().isBlank()) throw new InvalidValueException("Preencha o campo");
@@ -68,24 +68,24 @@ public class UsuarioService {
         user.setName(usuarioRequestDto.getName());
         user.setUsername(usuarioRequestDto.getUsername());
         usuarioRepo.save(user);
-        return findUser(user.getUsername());
+        return usuarioRepo.findById(user.getUsername()).get();
     }
 
-    public UsuarioDto findUser(String username) throws  InvalidValueException, NotFoundException {
-        if (username.isBlank()) throw new InvalidValueException("Username inválido");
-        if (!usuarioRepo.existsById(username)) throw new NotFoundException("Usuário não encontrado");
-        Usuario usuario = usuarioRepo.findById(username).get();
-        UsuarioDto userReturn = objectMapper.convertValue(usuario, UsuarioDto.class);
-        try {
-            List<FornecedorDto> fornecedoresToReturn = usuario.getFornecedores().stream()
-                    .map(a -> new FornecedorDto
-                            (a.getRazaoSocial(), a.getCnpj(), a.getStatus(), a.getHistorico())).collect(Collectors.toList());
-            userReturn.setFornecedoresDto(fornecedoresToReturn);
-        } catch (NullPointerException e) {
-            return userReturn;
-        }
-        return userReturn;
-    }
+//    public UsuarioDto findUser(String username) throws  InvalidValueException, NotFoundException {
+//        if (username.isBlank()) throw new InvalidValueException("Username inválido");
+//        if (!usuarioRepo.existsById(username)) throw new NotFoundException("Usuário não encontrado");
+//        Usuario usuario = usuarioRepo.findById(username).get();
+//        UsuarioDto userReturn = objectMapper.convertValue(usuario, UsuarioDto.class);
+//        try {
+//            List<FornecedorDto> fornecedoresToReturn = usuario.getFornecedores().stream()
+//                    .map(a -> new FornecedorDto
+//                            (a.getRazaoSocial(), a.getCnpj(), a.getStatus(), a.getHistorico())).collect(Collectors.toList());
+//            userReturn.setFornecedoresDto(fornecedoresToReturn);
+//        } catch (NullPointerException e) {
+//            return userReturn;
+//        }
+//        return userReturn;
+//    }
     public Usuario findUserByid(String username) throws NotFoundException, InvalidValueException {
         if (username.isBlank()) throw new InvalidValueException("Username inválido");
         if (!usuarioRepo.existsById(username)) throw new NotFoundException("Usuário não encontrado");

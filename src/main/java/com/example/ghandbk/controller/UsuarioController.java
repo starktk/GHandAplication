@@ -27,7 +27,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/updateUser")
-    public ResponseEntity<UsuarioDto> updateUser(@RequestBody UsuarioRequestDto usuarioRequestDto) throws InvalidValueException, NotAuthorizedException, NotFoundException {
+    public ResponseEntity<Usuario> updateUser(@RequestBody UsuarioRequestDto usuarioRequestDto) throws InvalidValueException, NotAuthorizedException, NotFoundException {
         return new ResponseEntity(usuarioService.updateUser(usuarioRequestDto), HttpStatus.ACCEPTED);
     }
 
@@ -36,11 +36,11 @@ public class UsuarioController {
         usuarioService.deleteUser(usuarioRequestDto);
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
-
-    @GetMapping("/findByUsername/{id}")
-    public ResponseEntity<UsuarioDto> findUser(@PathVariable("id")String username) throws  InvalidValueException, NotFoundException {
-        return new ResponseEntity(usuarioService.findUser(username), HttpStatus.FOUND);
-    }
+//
+//    @GetMapping("/findByUsername/{id}")
+//    public ResponseEntity<UsuarioDto> findUser(@PathVariable("id")String username) throws  InvalidValueException, NotFoundException {
+//        return new ResponseEntity(usuarioService.findUser(username), HttpStatus.FOUND);
+//    }
 
     @GetMapping("findUserByid/{id}")
     public ResponseEntity<Usuario> findById(@PathVariable("id") String username) throws InvalidValueException, NotFoundException {

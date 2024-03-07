@@ -22,8 +22,9 @@ public class AgendaProdutoController {
     private final AgendaProductService agendaProductService;
 
     @PostMapping("/setDateToReceive")
-    public ResponseEntity<AgendaProduto> setDateToReceive(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
-        return new ResponseEntity(agendaProductService.insertNewSchedule(agendaProdutoRequestDto), HttpStatus.CREATED);
+    public ResponseEntity setDateToReceive(@RequestBody AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+        agendaProductService.insertNewSchedule(agendaProdutoRequestDto);
+        return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @GetMapping("/findAgendaByMonth")

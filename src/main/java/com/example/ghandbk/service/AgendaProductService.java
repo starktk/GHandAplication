@@ -27,7 +27,7 @@ public class AgendaProductService {
     private final UsuarioService usuarioService;
     private final ObjectMapper objectMapper;
 
-    public AgendaProduto insertNewSchedule(AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
+    public void insertNewSchedule(AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException, NotAuthorizedException {
         if (agendaProdutoRequestDto.getCnpj() == null || agendaProdutoRequestDto.getCnpj().isBlank()) throw new InvalidValueException("Cnpj inválido");
         if (agendaProdutoRequestDto.getAmount() <= 0) throw new InvalidValueException("Quantidade inválida");
         if (agendaProdutoRequestDto.getNameProduct() == null || agendaProdutoRequestDto.getNameProduct().isBlank()) throw new InvalidValueException("Preencha o campo");
@@ -39,7 +39,6 @@ public class AgendaProductService {
         UsuarioRequestDto user = getInstanceForUserRQDto(agendaProdutoRequestDto.getUsername(), agendaProdutoRequestDto.getName());
         user.setAgendaProduto(agendaProduto);
         usuarioService.updateUser(user);
-        return agendaProduto;
     }
 
     public List<AgendaProdDto> findAgendaByMonth(AgendaProdutoRequestDto agendaProdutoRequestDto) throws InvalidValueException, NotFoundException {
